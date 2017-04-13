@@ -1,0 +1,3 @@
+Manifest-Version: 1.0
+com.chbachman.cminus.Start-Class: com.chbachman.cminus.Start
+
