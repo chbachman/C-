@@ -1,31 +1,36 @@
 package com.chbachman.cminus.representation;
 
+import com.chbachman.cminus.representation.function.CodeBlock;
+import com.chbachman.cminus.representation.function.Function;
 import com.chbachman.cminus.representation.value.Variable;
+import com.sun.tools.javac.jvm.Code;
 
-import java.util.Map;
-import java.util.Optional;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * Created by Chandler on 4/12/17.
  */
 public class Scope {
 
-    Map<String, Variable> vars = new TreeMap<>();
-    Map<String, Type> types = new TreeMap<>();
-    Map<String, Function> functions = new TreeMap<>();
+    ScopeHolder head = new ScopeHolder();
 
-    public final CodeBlock block;
+    public CodeBlock popScope() {
+        ScopeHolder current = this.head;
+        Optional<ScopeHolder> parent = head.parent;
+        if(parent.isPresent()) {
+            this.head = parent.get();
+        }
 
-    private Optional<Scope> parent;
-
-    public Scope() {
-        this(null, new Main());
+        return current.block;
     }
 
-    public Scope(Scope parent, CodeBlock block) {
-        this.parent = Optional.ofNullable(parent);
-        this.block = block;
+    public void pushScope(CodeBlock block) {
+        head = new ScopeHolder(head, block);
+        block.setupScope(this);
+    }
+
+    public CodeBlock code() {
+        return head.block;
     }
 
     public void addVariable(Variable v) {
@@ -33,19 +38,23 @@ public class Scope {
             return;
         }
 
-        vars.put(v.name, v);
+        head.vars.put(v.name, v);
     }
 
     public Optional<Variable> getVariable(String name) {
-        if (vars.containsKey(name)) {
-            return Optional.of(vars.get(name));
-        } else {
-            if (parent.isPresent()) {
-                return parent.get().getVariable(name);
-            } else {
-                return Optional.empty();
+        Optional<ScopeHolder> current = Optional.of(head);
+
+        while (current.isPresent()) {
+            ScopeHolder scope = current.get();
+
+            if (scope.vars.containsKey(name)) {
+                return Optional.of(scope.vars.get(name));
             }
+
+            current = scope.parent;
         }
+
+        return Optional.empty();
     }
 
     public void addFunction(Function f) {
@@ -53,23 +62,72 @@ public class Scope {
             return;
         }
 
-        functions.put(f.name, f);
+        head.functions.put(f.name, f);
     }
 
     public Optional<Function> getFunction(String name) {
-        if (functions.containsKey(name)) {
-            return Optional.of(functions.get(name));
-        } else {
-            if (parent.isPresent()) {
-                return parent.get().getFunction(name);
-            } else {
-                return Optional.empty();
+        Optional<ScopeHolder> current = Optional.of(head);
+
+        while (current.isPresent()) {
+            ScopeHolder scope = current.get();
+
+            if (scope.functions.containsKey(name)) {
+                return Optional.of(scope.functions.get(name));
             }
+
+            current = scope.parent;
+        }
+
+        return Optional.empty();
+    }
+
+    public String getWhitespace() {
+        StringBuilder whitespace = new StringBuilder();
+        Optional<ScopeHolder> current = head.parent;
+
+        while (current.isPresent()) {
+            ScopeHolder scope = current.get();
+
+            whitespace.append("    ");
+
+            current = scope.parent;
+        }
+
+        return whitespace.toString();
+    }
+
+    private class Main implements CodeBlock {
+        public Main() {}
+
+        @Override
+        public String first() {
+            return null;
+        }
+
+        @Override
+        public String last() {
+            return null;
         }
     }
 
-    public Optional<Scope> pop() {
-        return parent;
+
+    private class ScopeHolder {
+        Map<String, Variable> vars = new TreeMap<>();
+        Map<String, Function> functions = new TreeMap<>();
+
+        Optional<ScopeHolder> parent;
+        final CodeBlock block;
+
+        public ScopeHolder() {
+            this(null, new Main());
+        }
+
+        public ScopeHolder(ScopeHolder parent, CodeBlock block) {
+            this.parent = Optional.ofNullable(parent);
+            this.block = block;
+        }
+
+
     }
 
 

@@ -19,17 +19,12 @@ public interface Statement {
             return new Variable(cxt.variable(), scope);
         }
 
-        throw new RuntimeException("The statement type: " + cxt.getText() + " is not implemented yet.");
-    }
-
-    static Statement parse(CMinusParser.FuncStatementContext cxt, Scope scope) {
-
         if (cxt.ret() != null) {
             return new Return(cxt.ret(), scope);
         }
 
-        if (cxt.statement() != null) {
-            return parse(cxt.statement(), scope);
+        if (cxt.assignment() != null) {
+
         }
 
         throw new RuntimeException("The statement type: " + cxt.getText() + " is not implemented yet.");

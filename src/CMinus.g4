@@ -1,54 +1,75 @@
 // Define a grammar called Hello
 grammar CMinus;
-init : line* EOF;
-line  : func | (statement'\n') | (statement';') ;
+init : statements EOF ;
 
-statements
-    : statements_impl[-1]
-    ;
+statements: (statement | func | control | struct)* ;
 
-statements_impl[int indexBefore]
-locals [
-   int indexAfter = -1
-]
-    : {SwiftSupport.isSeparatedStatement(_input, $indexBefore)}? statement {$indexAfter = _input.index();} statements_impl[$indexAfter]?
-    ;
-
-// com.chbachman.cminus.representation.Function Declaration
-func: 'func' ID '('parameterList?')' funcReturn? '{' (funcStatement)* '}' ;
+// com.chbachman.cminus.representation.function.Function Declaration
+func: 'func' ID '('parameterList?')' funcReturn? '{' codeBlock '}' ;
 parameterList: parameter (',' parameter)* ;
-parameter: type ID ;
+parameter: ID':' type ;
 funcReturn: '->' type ;
+
+struct: 'struct' ID '{' classBlock '}' ;
+
+classBlock: (variable ';' | func)*;
 
 type: ID ;
 
+// Code Blocks will declare a new scope, and when exiting, remove said scope.
+codeBlock: (statement | control)* ;
+
 statement:
-    print |
-    functionCall |
-    variable ;
+    (print | functionCall | variable | ret | assignment) ';' ;
 
-funcStatement:
-    statement |
-    ret ;
+variable: (VAR ID '=' value) | (VAR ID ':' type) ;
+assignment: ID '=' value ;
+functionCall: ID '(' (value (',' value)*)? ')' ;
+print: PRINT '(' value ')' ;
+ret: RETURN value ;
 
-variable: (VARIABLE_DECLARATION? ID '=' value) | (VARIABLE_DECLARATION ID ':' type) ;
-functionCall: ID '(' (value (',' value)*)? ')';
-print: 'print' '(' value ')' ;
-ret: 'return' value ;
+value:
+    ID
+    | literal
+    | functionCall
+    | assignment
+    | paren='(' value ')'
+    |<assoc=right> value op='^' value
+    | value op='*' value
+    | value op='/' value
+    | value op='+' value
+    | value op='-' value
+    | value op='%' value
+    | value op='==' value
+    ;
 
-value: ID | literal | functionCall ;
+control:
+    ifStatement
+    | forStatement
+    ;
 
-ID : [a-zA-Z_]+ [a-zA-Z0-9_]* ;
+ifStatement:
+    'if' value '{' codeBlock '}' ('else if' value '{' codeBlock '}')*? ('else' '{' codeBlock '}')?;
+
+forStatement: 'for' range '{' codeBlock '}' ;
+range: ID 'in' value'..'value ;
 
 // Literals
-literal: STRING | INT | FLOAT ;
+literal: STRING | INT | FLOAT | BOOL;
+BOOL : 'true' | 'false' ;
 STRING : '"' (~'"'|'\\"')* '"' ;
 INT : [0-9]+ ;
 FLOAT: [0-9]+'.'[0-9]+ ;
-VARIABLE_DECLARATION: 'var' ;
+
+// Reserved Keywords
+VAR: 'var' ;
+PRINT: 'print' ;
+RETURN: 'return' ;
+
+ID : [a-zA-Z_]+ [a-zA-Z0-9_]* ;
 
 // Removals (C Style Comments)
 COMMENT : '/*' .*? '*/' -> channel(HIDDEN) ;
 LINE_COMMENT : '//' ~'\n'* '\n' -> channel(HIDDEN) ;
 
-WS : [ \t\r]+ -> skip ; // skip spaces, tabs, newlines
+WS : [ \t\r\n]+ -> skip ; // skip spaces, tabs, newlines

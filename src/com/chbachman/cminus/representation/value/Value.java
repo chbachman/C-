@@ -32,6 +32,14 @@ public interface Value extends Typed {
             return new FunctionCall(ctx.functionCall(), scope);
         }
 
+        if (ctx.op != null) {
+            return new Operation(ctx, scope);
+        }
+
+        if (ctx.paren != null) {
+            return new Paren(ctx, scope);
+        }
+
         throw new RuntimeException("Type of value isn't implemented. " + ctx.getText());
     }
 

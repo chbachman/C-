@@ -18,6 +18,9 @@ public class Literal implements Value {
         } else if (ctx.STRING() != null) {
             type = Type.Native.STRING.type;
             code = ctx.getText();
+        } else if (ctx.BOOL() != null) {
+            type = Type.Native.BOOL.type;
+            code = ctx.getText().trim().equals("true") ? "1" : "0";
         }
     }
 

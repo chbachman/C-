@@ -1,13 +1,12 @@
 package com.chbachman.cminus;
 
-import com.chbachman.cminus.representation.Function;
+import com.chbachman.cminus.representation.function.Function;
 import com.chbachman.cminus.representation.Scope;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Created by Chandler on 4/9/17.

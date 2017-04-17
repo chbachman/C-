@@ -39,12 +39,22 @@ public class Type implements Typed {
     }
 
     public static Type from(CMinusParser.TypeContext context) {
-        String name = context.ID().getText();
+        return getType(context.ID().getText());
+    }
 
+    public static Type from(Struct struct) {
+        return getType(struct.name, "struct " + struct.name);
+    }
+
+    private static Type getType(String name) {
+        return getType(name, name);
+    }
+
+    private static Type getType(String name, String cType) {
         if (types.containsKey(name)) {
             return types.get(name);
         } else {
-            Type t = new Type(name);
+            Type t = new Type(name, cType);
             types.put(name, t);
             return t;
         }
@@ -54,7 +64,8 @@ public class Type implements Typed {
 
         STRING("String", "char *"),
         INT("Int", "int"),
-        VOID("Void", "void");
+        VOID("Void", "void"),
+        BOOL("Bool", "int");
 
         public Type type;
 

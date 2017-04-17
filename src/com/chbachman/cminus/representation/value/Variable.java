@@ -20,7 +20,7 @@ public class Variable implements Value, Statement {
     public Variable(CMinusParser.VariableContext ctx, Scope scope) {
         this.name = ctx.ID().getText();
 
-        newVariable = ctx.VARIABLE_DECLARATION() != null;
+        newVariable = ctx.VAR() != null;
 
         if (ctx.value() != null) {
             this.value = Optional.of(Value.parse(ctx.value(), scope));
@@ -34,13 +34,35 @@ public class Variable implements Value, Statement {
         scope.addVariable(this);
     }
 
+    public Variable(CMinusParser.ParameterContext ctx) {
+        this.name = ctx.ID().getText();
+
+        newVariable = true;
+
+        this.type = Optional.of(Type.from(ctx.type()));
+        this.value = Optional.empty();
+    }
+
+    public Variable(String name, Value v) {
+        this.name = name;
+        this.value = Optional.of(v);
+        this.type = Optional.empty();
+        this.newVariable = true;
+    }
+
+    public Variable(String name, Type t) {
+        this.name = name;
+        this.value = Optional.empty();
+        this.type = Optional.of(t);
+        this.newVariable = true;
+    }
+
     @Override
     public String code() {
         if (value.isPresent()) {
-            String code;
+            String code = "";
+            // Add the Type to make it a new variable
             if (newVariable) {
-                code = "";
-            } else {
                 code = value.get().type().code() + " ";
             }
 

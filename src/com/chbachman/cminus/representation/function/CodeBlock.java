@@ -1,5 +1,6 @@
-package com.chbachman.cminus.representation;
+package com.chbachman.cminus.representation.function;
 
+import com.chbachman.cminus.representation.Scope;
 import com.chbachman.cminus.representation.statement.Statement;
 import com.chbachman.cminus.representation.value.Variable;
 
@@ -9,10 +10,9 @@ import java.util.List;
  * Created by Chandler on 4/13/17.
  */
 public interface CodeBlock {
+    String first();
 
-    void addStatement(Statement s);
+    String last();
 
-    List<Statement> getStatements();
-
-    List<Variable> getVariablesToInit();
+    default void setupScope(Scope scope) {}
 }

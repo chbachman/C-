@@ -9,6 +9,6 @@ public class PrintTest {
 
     @Test
     public void testPrintHello() {
-
+        String result = CMinusTest.create("print(\"Hello, World!\");");
     }
 }

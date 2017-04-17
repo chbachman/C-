@@ -19,12 +19,16 @@ public class Print implements Statement {
         switch (Type.Native.get(value.type())) {
             case INT: modifier = "%d"; break;
             case STRING: modifier = "%s"; break;
+            case BOOL: modifier = "%s"; break;
             default: throw new RuntimeException("Cannot print value " + value.value());
         }
     }
 
     @Override
     public String code() {
+        if (value.type() == Type.Native.BOOL.type) {
+            return "printf(\"" + modifier + "\\n\", " + value.value() + " ? \"true\" : \"false\");";
+        }
         return "printf(\"" + modifier + "\\n\", " + value.value() + ");";
     }
 }
