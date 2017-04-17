@@ -10,7 +10,7 @@ import java.util.*;
 /**
  * Created by Chandler on 4/12/17.
  */
-public class Scope {
+public class Scope implements Iterable<Scope.ScopeHolder>{
 
     ScopeHolder head = new ScopeHolder();
 
@@ -65,6 +65,24 @@ public class Scope {
         head.functions.put(f.name, f);
     }
 
+    public void addStruct(Struct s) {
+        if (s == null) {
+            return;
+        }
+
+        head.structs.put(s.name, s);
+    }
+
+    public List<Struct> getStructs() {
+        List<Struct> structList = new ArrayList<>();
+
+        for(ScopeHolder s : this) {
+            structList.addAll(s.structs.values());
+        }
+
+        return structList;
+    }
+
     public Optional<Function> getFunction(String name) {
         Optional<ScopeHolder> current = Optional.of(head);
 
@@ -96,6 +114,11 @@ public class Scope {
         return whitespace.toString();
     }
 
+    @Override
+    public Iterator<ScopeHolder> iterator() {
+        return new ScopeIterator(this);
+    }
+
     private class Main implements CodeBlock {
         public Main() {}
 
@@ -110,10 +133,32 @@ public class Scope {
         }
     }
 
+    private class ScopeIterator implements Iterator<ScopeHolder> {
 
-    private class ScopeHolder {
+        Optional<ScopeHolder> scope;
+
+        ScopeIterator(Scope s) {
+            this.scope = Optional.of(s.head);
+        }
+
+        @Override
+        public boolean hasNext() {
+            return scope.isPresent();
+        }
+
+        @Override
+        public ScopeHolder next() {
+            ScopeHolder s = scope.get();
+            scope = s.parent;
+            return s;
+        }
+    }
+
+
+    class ScopeHolder {
         Map<String, Variable> vars = new TreeMap<>();
         Map<String, Function> functions = new TreeMap<>();
+        Map<String, Struct> structs = new TreeMap<>();
 
         Optional<ScopeHolder> parent;
         final CodeBlock block;

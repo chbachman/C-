@@ -2,6 +2,7 @@ package com.chbachman.cminus;
 
 import com.chbachman.cminus.representation.*;
 import com.chbachman.cminus.representation.control.Control;
+import com.chbachman.cminus.representation.function.CreatedFunction;
 import com.chbachman.cminus.representation.function.Function;
 import com.chbachman.cminus.representation.function.MainFunction;
 import com.chbachman.cminus.representation.statement.Statement;
@@ -40,57 +41,68 @@ public class Start {
         // Pass 1-1: Turn Structs into something more resembling C
         //walker.walk(new Structs(), tree);
 
-        // Pass 1: Grab Function Headers
+        // Pass 1: Grab Function/Struct Headers, create list of structs.
         walker.walk(new Headers(scope), tree);
         out.println();
 
-        // Pass 2: Declare Functions
+        // Pass 2: Declare Function Bodies.
         walker.walk(new Functions(scope), tree);
 
-        // Pass 3: Build Main
+        // Pass 3: Build Main Method at the end.
         walker.walk(new Main(scope), tree);
     }
 
     public static class Headers extends PrintPass {
 
+        // The current struct to add Variables to while parsing.
         Struct current;
 
         public Headers(Scope scope) {
             super(scope);
+            // Only printing structs, so disable at beginning.
             this.shouldPrint = false;
         }
 
         @Override
         public void enterFunc(CMinusParser.FuncContext ctx) {
+            // Create list of functions defined, and print out the headers.
+            // At the beginning of the file, so we can just printout.
+            // (This does leave the function headers intermingled with struct declarations.
+            // ¯\_(ツ)_/¯
             Function f = new Function(ctx);
             scope.addFunction(f);
             out.println(f.getHeader());
         }
 
-
         @Override
+        // Setup the struct to recieve variables declared within.
         public void enterStruct(CMinusParser.StructContext ctx) {
             this.shouldPrint = true;
             super.enterStruct(ctx);
 
             current = new Struct(ctx, scope);
+            scope.addStruct(current);
             print(current.first());
             scope.pushScope(current);
         }
 
         @Override
+        // Remove the struct from current, and get rid of the scope.
         public void exitStruct(CMinusParser.StructContext ctx) {
             super.exitStruct(ctx);
             print(scope.popScope().last());
             this.shouldPrint = false;
+            current = null;
         }
 
         @Override
+        // Printout the declaration, and save value to create later.
         public void enterVariable(CMinusParser.VariableContext ctx) {
             super.enterVariable(ctx);
             Variable v = new Variable(ctx, scope);
             current.variables.add(v);
-            print(v.code());
+            // Convert to only declaration, no inline creation.
+            print(new Variable(v.name, v.type()).code());
         }
     }
 
@@ -148,6 +160,12 @@ public class Start {
                 out.println(scope.getWhitespace() + s);
             }
         }
+
+        protected void printLines(String s) {
+            for (String string : s.split("\n")) {
+                print(string);
+            }
+        }
     }
 
     public static class Functions extends PrintPass {
@@ -167,6 +185,21 @@ public class Start {
         public void exitFunc(CMinusParser.FuncContext ctx) {
             super.exitFunc(ctx);
             this.shouldPrint = false;
+        }
+
+        @Override
+        public void exitInit(CMinusParser.InitContext ctx) {
+            super.exitInit(ctx);
+            this.shouldPrint = true;
+
+            for (Struct s: scope.getStructs()) {
+                CreatedFunction f = s.initFunc(scope);
+                print(f.first());
+                scope.pushScope(f);
+                printLines(f.middle());
+                scope.popScope();
+                print(f.last());
+            }
         }
     }
 

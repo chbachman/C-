@@ -40,6 +40,8 @@ public interface Value extends Typed {
             return new Paren(ctx, scope);
         }
 
+        // TODO: Struct Initialization e.g. Struct();
+
         throw new RuntimeException("Type of value isn't implemented. " + ctx.getText());
     }
 

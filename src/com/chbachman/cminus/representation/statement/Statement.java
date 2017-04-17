@@ -9,25 +9,25 @@ import com.chbachman.cminus.representation.value.Variable;
  */
 public interface Statement {
 
-    static Statement parse(CMinusParser.StatementContext cxt, Scope scope) {
+    static Statement parse(CMinusParser.StatementContext ctx, Scope scope) {
 
-        if (cxt.print() != null) {
-            return new Print(cxt.print(), scope);
+        if (ctx.print() != null) {
+            return new Print(ctx.print(), scope);
         }
 
-        if (cxt.variable() != null) {
-            return new Variable(cxt.variable(), scope);
+        if (ctx.variable() != null) {
+            return new Variable(ctx.variable(), scope);
         }
 
-        if (cxt.ret() != null) {
-            return new Return(cxt.ret(), scope);
+        if (ctx.ret() != null) {
+            return new Return(ctx.ret(), scope);
         }
 
-        if (cxt.assignment() != null) {
-
+        if (ctx.assignment() != null) {
+            return new Assignment(ctx.assignment(), scope);
         }
 
-        throw new RuntimeException("The statement type: " + cxt.getText() + " is not implemented yet.");
+        throw new RuntimeException("The statement type: " + ctx.getText() + " is not implemented yet.");
     }
 
     String code();

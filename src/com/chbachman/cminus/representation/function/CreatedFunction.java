@@ -1,5 +1,6 @@
 package com.chbachman.cminus.representation.function;
 
+import com.chbachman.cminus.representation.Scope;
 import com.chbachman.cminus.representation.Type;
 import com.chbachman.cminus.representation.statement.Statement;
 import com.chbachman.cminus.representation.value.Variable;
@@ -12,7 +13,7 @@ import java.util.List;
  */
 public class CreatedFunction extends Function {
 
-    List<Statement> statements;
+    final List<Statement> statements;
 
     public CreatedFunction(Type type, String name) {
         super(type, name);
@@ -29,19 +30,11 @@ public class CreatedFunction extends Function {
         return this;
     }
 
-    @Override
-    public String first() {
-        StringBuilder s = new StringBuilder(super.first());
-
+    public String middle() {
+        StringBuilder s = new StringBuilder();
         for (Statement st : statements) {
-
+            s.append(st.code() + '\n');
         }
-
         return s.toString();
-    }
-
-    @Override
-    public String last() {
-        return super.last();
     }
 }

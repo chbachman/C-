@@ -15,6 +15,10 @@ public class Return implements Statement {
         this.value = Value.parse(ctx.value(), scope);
     }
 
+    public Return(Value value) {
+        this.value = value;
+    }
+
     @Override
     public String code() {
         return "return " + value.value() + ";";

@@ -66,7 +66,8 @@ VAR: 'var' ;
 PRINT: 'print' ;
 RETURN: 'return' ;
 
-ID : [a-zA-Z_]+ [a-zA-Z0-9_]* ;
+ID : VALIDNAME | VALIDNAME'.'VALIDNAME;
+VALIDNAME: [a-zA-Z_]+ [a-zA-Z0-9_]* ;
 
 // Removals (C Style Comments)
 COMMENT : '/*' .*? '*/' -> channel(HIDDEN) ;
