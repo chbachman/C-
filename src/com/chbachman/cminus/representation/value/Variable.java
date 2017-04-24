@@ -1,9 +1,11 @@
 package com.chbachman.cminus.representation.value;
 
 import com.chbachman.cminus.CMinusParser;
+import com.chbachman.cminus.Start;
 import com.chbachman.cminus.representation.Scope;
 import com.chbachman.cminus.representation.Type;
 import com.chbachman.cminus.representation.statement.Statement;
+import org.antlr.v4.runtime.RecognitionException;
 
 import java.util.Optional;
 
@@ -13,9 +15,10 @@ import java.util.Optional;
 public class Variable implements Value, Statement {
 
     public final String name;
-    public final Optional<Value> value;
-    public final Optional<Type> type;
+    public Optional<Value> value;
+    public final Type type;
     public final boolean newVariable;
+    private Optional<String> container;
 
     public Variable(CMinusParser.VariableContext ctx, Scope scope) {
         this.name = ctx.ID().getText();
@@ -24,9 +27,9 @@ public class Variable implements Value, Statement {
 
         if (ctx.value() != null) {
             this.value = Optional.of(Value.parse(ctx.value(), scope));
-            this.type = Optional.empty();
+            this.type = this.value.get().type();
         } else {
-            this.type = Optional.of(Type.from(ctx.type()));
+            this.type = Type.from(ctx.type());
             this.value = Optional.empty();
         }
 
@@ -39,21 +42,21 @@ public class Variable implements Value, Statement {
 
         newVariable = true;
 
-        this.type = Optional.of(Type.from(ctx.type()));
+        this.type = Type.from(ctx.type());
         this.value = Optional.empty();
     }
 
     public Variable(String name, Value v) {
         this.name = name;
         this.value = Optional.of(v);
-        this.type = Optional.empty();
+        this.type = v.type();
         this.newVariable = true;
     }
 
     public Variable(String name, Type t) {
         this.name = name;
         this.value = Optional.empty();
-        this.type = Optional.of(t);
+        this.type = t.type();
         this.newVariable = true;
     }
 
@@ -67,17 +70,15 @@ public class Variable implements Value, Statement {
             }
 
             return code + name + " = " + value.get().value() + ";";
-        } else if (type.isPresent()) {
-            return type.get().code() + " " + name + ";";
         } else {
-            throw new RuntimeException("Variable doesn't have a Type or a Value");
+            return type.code() + " " + name + ";";
         }
 
     }
 
     @Override
     public Type type() {
-        return value.isPresent() ? value.get().type() : type.get();
+        return type;
     }
 
     @Override

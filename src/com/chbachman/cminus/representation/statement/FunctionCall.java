@@ -1,6 +1,7 @@
 package com.chbachman.cminus.representation.statement;
 
 import com.chbachman.cminus.CMinusParser;
+import com.chbachman.cminus.representation.Struct;
 import com.chbachman.cminus.representation.function.Function;
 import com.chbachman.cminus.representation.Scope;
 import com.chbachman.cminus.representation.Type;
@@ -19,15 +20,12 @@ public class FunctionCall implements Value, Statement {
     List<Value> parameters;
 
     public FunctionCall(CMinusParser.FunctionCallContext ctx, Scope scope) {
+        this(ctx, scope, makeFunction(ctx, scope));
+    }
+
+    protected FunctionCall(CMinusParser.FunctionCallContext ctx, Scope scope, Function ref) {
+        this.ref = ref;
         String name = ctx.ID().getText();
-        Optional<Function> func = scope.getFunction(name);
-
-        if (func.isPresent()) {
-            ref = func.get();
-        } else {
-            throw new RuntimeException("Function " + name + " was not found.");
-        }
-
         parameters = ctx.value().stream().map(p -> Value.parse(p, scope)).collect(Collectors.toList());
 
         if (parameters.size() != ref.parameters.size()) {
@@ -40,6 +38,20 @@ public class FunctionCall implements Value, Statement {
                         + parameters.get(i).type().code() + " as a parameter");
             }
         }
+    }
+
+    private static Function makeFunction(CMinusParser.FunctionCallContext ctx, Scope scope) {
+        String name = ctx.ID().getText();
+        Optional<Function> func = scope.getFunction(name);
+        Function ref;
+
+        if (func.isPresent()) {
+            ref = func.get();
+        } else {
+            throw new RuntimeException("Function " + name + " was not found.");
+        }
+
+        return ref;
     }
 
     @Override

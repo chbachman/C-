@@ -1,25 +1,12 @@
-// Next Goal: If
+struct Greeting {
+    var name = "Hello, World!";
+}
 
 struct Temp {
-    var name = 2;
-    var temp = "Hello, World!";
-    var temp2 : String;
+    var greeting = Greeting();
+    var id = 2;
 }
 
-func temp() {
-    var name : String;
-    name = "Hello!";
-    print(name);
-}
+var t = Temp();
 
-for index in 1..100 {
-    print(index);
-
-    if index % 5 == 0 {
-        print("Fizz");
-    }
-
-    if index % 3 == 0 {
-        print("Buzz");
-    }
-}
+print(t.greeting.name);

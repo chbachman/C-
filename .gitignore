@@ -38,6 +38,7 @@ Temporary Items
 *.pch
 
 # Libraries
+*.lib
 *.a
 *.la
 *.lo

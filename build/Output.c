@@ -1,31 +1,29 @@
-struct Temp {
-    int name;
-    char * temp;
-    char * temp2;
+#include <stdio.h>
+struct Greeting {
+    char * name;
 };
 
-void temp();
+struct Temp {
+    struct Greeting greeting;
+    int id;
+};
 
-void temp() {
-    char * name;
-    name = "Hello!";
-    printf("%s\n", name);
+
+struct Greeting initGreeting() {
+    struct Greeting createdGreeting;
+    createdGreeting.name = "Hello, World!";
+    return createdGreeting;
 }
 
 struct Temp initTemp() {
     struct Temp createdTemp;
+    createdTemp.greeting = initGreeting();
+    createdTemp.id = 2;
     return createdTemp;
 }
 
 int main() {
-    for (int index = 1; index <= 100; index++) {
-        printf("%d\n", index);
-        if (index % 5 == 0) {
-            printf("%s\n", "Fizz");
-        }
-        if (index % 3 == 0) {
-            printf("%s\n", "Buzz");
-        }
-    }
+    struct Temp t = initTemp();
+    printf("%s\n", t.greeting.name);
     return 0;
 }

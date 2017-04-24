@@ -29,7 +29,7 @@ print: PRINT '(' value ')' ;
 ret: RETURN value ;
 
 value:
-    ID
+    ID(dot)?
     | literal
     | functionCall
     | assignment
@@ -42,6 +42,12 @@ value:
     | value op='%' value
     | value op='==' value
     ;
+
+dot:
+    '.'ID(dot)?
+    | functionCall
+    ;
+
 
 control:
     ifStatement
@@ -66,8 +72,7 @@ VAR: 'var' ;
 PRINT: 'print' ;
 RETURN: 'return' ;
 
-ID : VALIDNAME | VALIDNAME'.'VALIDNAME;
-VALIDNAME: [a-zA-Z_]+ [a-zA-Z0-9_]* ;
+ID : [a-zA-Z_]+ [a-zA-Z0-9_]*;
 
 // Removals (C Style Comments)
 COMMENT : '/*' .*? '*/' -> channel(HIDDEN) ;

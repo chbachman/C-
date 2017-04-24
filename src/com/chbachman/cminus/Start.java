@@ -17,12 +17,13 @@ import java.util.Optional;
 public class Start {
 
     static PrintStream out;
+    public static CMinusParser parser;
 
-    static ParseTree generateTree(CharStream input) throws Exception {
+    static CMinusParser generateTree(CharStream input) throws Exception {
         CMinusLexer lexer = new CMinusLexer(input);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         CMinusParser parser = new CMinusParser(tokens);
-        return parser.init();
+        return parser;
     }
 
     public static void main(String[] args) throws Exception {
@@ -32,14 +33,16 @@ public class Start {
 
         File output = new File(args[1]);
         out = new PrintStream(output);
-        ParseTree tree = generateTree(CharStreams.fromFileName(args[0]));
+        parser = generateTree(CharStreams.fromFileName(args[0]));
+        ParseTree tree = parser.init();
 
         Type.init();
         Scope scope = new Scope();
         ParseTreeWalker walker = new ParseTreeWalker();
 
-        // Pass 1-1: Turn Structs into something more resembling C
-        //walker.walk(new Structs(), tree);
+        // TODO: Make this more general
+        // Pass 0: Add external runtime libraries.
+        out.println("#include <stdio.h>");
 
         // Pass 1: Grab Function/Struct Headers, create list of structs.
         walker.walk(new Headers(scope), tree);
@@ -99,10 +102,12 @@ public class Start {
         // Printout the declaration, and save value to create later.
         public void enterVariable(CMinusParser.VariableContext ctx) {
             super.enterVariable(ctx);
-            Variable v = new Variable(ctx, scope);
-            current.variables.add(v);
-            // Convert to only declaration, no inline creation.
-            print(new Variable(v.name, v.type()).code());
+            if (current != null) {
+                Variable v = new Variable(ctx, scope);
+                current.variables.add(v);
+                // Convert to only declaration, no inline creation.
+                print(new Variable(v.name, v.type()).code());
+            }
         }
     }
 
@@ -225,7 +230,7 @@ public class Start {
 
         @Override
         public void exitStruct(CMinusParser.StructContext ctx) {
-            shouldPrint = false;
+            shouldPrint = true;
             super.exitStruct(ctx);
         }
 

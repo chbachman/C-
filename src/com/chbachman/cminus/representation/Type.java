@@ -84,7 +84,7 @@ public class Type implements Typed {
                 }
             }
 
-            return null;
+            return VOID;
         }
 
     }

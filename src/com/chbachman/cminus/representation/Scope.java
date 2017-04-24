@@ -83,6 +83,16 @@ public class Scope implements Iterable<Scope.ScopeHolder>{
         return structList;
     }
 
+    public Optional<Struct> getStruct(String name) {
+        for (ScopeHolder scope : this) {
+            if (scope.structs.containsKey(name)) {
+                return Optional.of(scope.structs.get(name));
+            }
+        }
+
+        return Optional.empty();
+    }
+
     public Optional<Function> getFunction(String name) {
         Optional<ScopeHolder> current = Optional.of(head);
 
