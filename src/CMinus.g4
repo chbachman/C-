@@ -2,7 +2,7 @@
 grammar CMinus;
 init : statements EOF ;
 
-statements: (statement | func | control | struct)* ;
+statements: (statement | func | struct)* ;
 
 // com.chbachman.cminus.representation.function.Function Declaration
 func: 'func' ID '('parameterList?')' funcReturn? '{' codeBlock '}' ;
@@ -12,15 +12,24 @@ funcReturn: '->' type ;
 
 struct: 'struct' ID '{' classBlock '}' ;
 
-classBlock: (variable ';' | func)*;
+classBlock: (variable ';' | func | initBlock)*;
+
+initBlock: 'init' ('('parameterList')')? '{' codeBlock '}';
 
 type: ID ;
 
 // Code Blocks will declare a new scope, and when exiting, remove said scope.
-codeBlock: (statement | control)* ;
+codeBlock: (statement)* ;
 
 statement:
-    (print | functionCall | variable | ret | assignment) ';' ;
+    (( print
+      | functionCall
+      | variable
+      | ret
+      | assignment
+      ) ';') |
+    ( control
+      );
 
 variable: (VAR ID '=' value) | (VAR ID ':' type) ;
 assignment: ID '=' value ;

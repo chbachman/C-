@@ -11,26 +11,32 @@ import java.io.InputStreamReader;
 public class Run {
 
     public static void build(String inputFile, String outputFile) {
-        runCommand("clang " + inputFile + " -o " + outputFile);
+        command("clang " + inputFile + " -o " + outputFile);
     }
 
     public static void run(String inputFile) {
-        runCommand("./" + inputFile);
+        command("./" + inputFile);
     }
 
     public static void buildAndRun(String inputFile, String tempFile) {
-        Process compiler = runCommand("clang " + inputFile + " -o " + tempFile);
-        try {
-            compiler.waitFor();
+        command("clang " + inputFile + " -o " + tempFile, "./" + tempFile);
+    }
 
-            runCommand("./" + tempFile);
+    public static void command(String... commands) {
+        Process current;
 
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        for (int i = 0; i < commands.length; i++) {
+            current = command(commands[i]);
+
+            try {
+                current.waitFor();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
-    private static Process runCommand(String command) {
+    public static Process command(String command) {
         try {
             final Process pr = Runtime.getRuntime().exec(command);
 

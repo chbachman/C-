@@ -18,6 +18,7 @@ public class Assignment implements Value, Statement {
 
     public Assignment(CMinusParser.AssignmentContext ctx, Scope scope) {
         this.name = ctx.ID().getText();
+        System.out.println(name);
         this.value = Value.parse(ctx.value(), scope);
 
         Optional<Variable> var = scope.getVariable(name);

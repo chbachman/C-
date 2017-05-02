@@ -42,7 +42,8 @@ public class FunctionCall implements Value, Statement {
 
     private static Function makeFunction(CMinusParser.FunctionCallContext ctx, Scope scope) {
         String name = ctx.ID().getText();
-        Optional<Function> func = scope.getFunction(name);
+        List<Value> parameters = ctx.value().stream().map(p -> Value.parse(p, scope)).collect(Collectors.toList());
+        Optional<Function> func = scope.getFunction(name, parameters);
         Function ref;
 
         if (func.isPresent()) {
@@ -61,7 +62,12 @@ public class FunctionCall implements Value, Statement {
 
     @Override
     public String code() {
-        StringBuilder s = new StringBuilder(ref.name)
+        return value() + ';';
+    }
+
+    @Override
+    public String value() {
+        StringBuilder s = new StringBuilder(ref.getCName())
                 .append('(');
 
         for (Value value: parameters) {
@@ -75,10 +81,5 @@ public class FunctionCall implements Value, Statement {
         s.append(')');
 
         return s.toString();
-    }
-
-    @Override
-    public String value() {
-        return code();
     }
 }

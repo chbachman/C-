@@ -1,12 +1,11 @@
-struct Greeting {
-    var name = "Hello, World!";
+func temp() -> Int {
+    return 2 + 2;
 }
 
-struct Temp {
-    var greeting = Greeting();
-    var id = 2;
+for index in 1..100 {
+  print(index);
 }
 
-var t = Temp();
+var t = 2 + 1;
 
-print(t.greeting.name);
+print(t);

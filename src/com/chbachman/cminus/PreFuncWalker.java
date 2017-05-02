@@ -34,6 +34,6 @@ public class PreFuncWalker extends CMinusBaseListener {
 
     @Override
     public void enterFunc(CMinusParser.FuncContext ctx) {
-        functions.add(new Function(ctx));
+        //functions.add(new Function(ctx));
     }
 }

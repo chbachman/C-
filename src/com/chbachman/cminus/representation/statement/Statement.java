@@ -2,6 +2,7 @@ package com.chbachman.cminus.representation.statement;
 
 import com.chbachman.cminus.CMinusParser;
 import com.chbachman.cminus.representation.Scope;
+import com.chbachman.cminus.representation.control.Control;
 import com.chbachman.cminus.representation.value.Variable;
 
 /**
@@ -25,6 +26,14 @@ public interface Statement {
 
         if (ctx.assignment() != null) {
             return new Assignment(ctx.assignment(), scope);
+        }
+
+        if (ctx.functionCall() != null) {
+            return new FunctionCall(ctx.functionCall(), scope);
+        }
+
+        if (ctx.control() != null) {
+            return Control.parse(ctx.control(), scope);
         }
 
         throw new RuntimeException("The statement type: " + ctx.getText() + " is not implemented yet.");

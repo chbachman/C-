@@ -3,6 +3,7 @@ package com.chbachman.cminus.representation.control;
 import com.chbachman.cminus.CMinusParser;
 import com.chbachman.cminus.representation.Scope;
 import com.chbachman.cminus.representation.Type;
+import com.chbachman.cminus.representation.function.CodeBlockHolder;
 import com.chbachman.cminus.representation.statement.Statement;
 import com.chbachman.cminus.representation.value.Value;
 import com.chbachman.cminus.representation.value.Variable;
@@ -14,26 +15,27 @@ import java.util.List;
 /**
  * Created by Chandler on 4/14/17.
  */
-public class ForStatement implements Control {
+public class ForStatement extends CodeBlockHolder implements Control {
 
-    Value minimum;
-    Value maximum;
+    final Value minimum;
+    final Value maximum;
 
-    Variable index;
+    final Variable index;
 
     public ForStatement(CMinusParser.ForStatementContext ctx, Scope scope) {
-        if (ctx.range() != null) {
-            CMinusParser.RangeContext range = ctx.range();
+        CMinusParser.RangeContext range = ctx.range();
 
-            minimum = Value.parse(range.value(0), scope);
-            maximum = Value.parse(range.value(1), scope);
+        minimum = Value.parse(range.value(0), scope);
+        maximum = Value.parse(range.value(1), scope);
 
-            if (minimum.type() != Type.Native.INT.type || maximum.type() != Type.Native.INT.type) {
-                throw new RuntimeException("For Loop without int range. " + range.getText());
-            }
-
-            index = new Variable(range.ID().getText(), Type.Native.INT.type);
+        if (minimum.type() != Type.Native.INT.type || maximum.type() != Type.Native.INT.type) {
+            throw new RuntimeException("For Loop without int range. " + range.getText());
         }
+
+        index = new Variable(range.ID().getText(), Type.Native.INT.type);
+
+        // Call super constructor
+        init(ctx.codeBlock(), scope);
     }
 
     @Override

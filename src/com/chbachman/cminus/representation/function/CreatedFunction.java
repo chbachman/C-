@@ -13,11 +13,8 @@ import java.util.List;
  */
 public class CreatedFunction extends Function {
 
-    final List<Statement> statements;
-
     public CreatedFunction(Type type, String name) {
-        super(type, name);
-        statements = new ArrayList<>();
+        super(type, name, new ArrayList<>());
     }
 
     public CreatedFunction addParameter(Variable p) {
@@ -28,13 +25,5 @@ public class CreatedFunction extends Function {
     public CreatedFunction addStatement(Statement s) {
         this.statements.add(s);
         return this;
-    }
-
-    public String middle() {
-        StringBuilder s = new StringBuilder();
-        for (Statement st : statements) {
-            s.append(st.code() + '\n');
-        }
-        return s.toString();
     }
 }

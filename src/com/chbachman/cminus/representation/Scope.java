@@ -2,6 +2,7 @@ package com.chbachman.cminus.representation;
 
 import com.chbachman.cminus.representation.function.CodeBlock;
 import com.chbachman.cminus.representation.function.Function;
+import com.chbachman.cminus.representation.value.Value;
 import com.chbachman.cminus.representation.value.Variable;
 import com.sun.tools.javac.jvm.Code;
 
@@ -37,21 +38,16 @@ public class Scope implements Iterable<Scope.ScopeHolder>{
         if (v == null) {
             return;
         }
-
+        System.out.println(head.vars);
         head.vars.put(v.name, v);
+        System.out.println(head.vars);
     }
 
     public Optional<Variable> getVariable(String name) {
-        Optional<ScopeHolder> current = Optional.of(head);
-
-        while (current.isPresent()) {
-            ScopeHolder scope = current.get();
-
+        for (ScopeHolder scope : this) {
             if (scope.vars.containsKey(name)) {
                 return Optional.of(scope.vars.get(name));
             }
-
-            current = scope.parent;
         }
 
         return Optional.empty();
@@ -62,7 +58,19 @@ public class Scope implements Iterable<Scope.ScopeHolder>{
             return;
         }
 
-        head.functions.put(f.name, f);
+        if (getFunction(f.getBaseName(), f.parameters).isPresent()) {
+            throw new RuntimeException("The function " + f.getBaseName() + " already exists.");
+        }
+
+        if (head.functions.containsKey(f.getBaseName())) {
+            head.functions.get(f.getBaseName()).add(f);
+            return;
+        }
+
+        List<Function> newList = new ArrayList<>();
+        newList.add(f);
+
+        head.functions.put(f.getBaseName(), newList);
     }
 
     public void addStruct(Struct s) {
@@ -93,35 +101,39 @@ public class Scope implements Iterable<Scope.ScopeHolder>{
         return Optional.empty();
     }
 
-    public Optional<Function> getFunction(String name) {
-        Optional<ScopeHolder> current = Optional.of(head);
-
-        while (current.isPresent()) {
-            ScopeHolder scope = current.get();
-
+    public boolean functionNameExists(String name) {
+        for (ScopeHolder scope: this) {
             if (scope.functions.containsKey(name)) {
-                return Optional.of(scope.functions.get(name));
+                return true;
             }
+        }
 
-            current = scope.parent;
+        return false;
+    }
+
+    public Optional<Function> getFunction(String name, List<? extends Typed> parameters) {
+        for (ScopeHolder scope : this) {
+            if (scope.functions.containsKey(name)) {
+                List<Function> functions = scope.functions.get(name);
+
+                loop:
+                for (Function f : functions) {
+                    if (f.parameters.size() != parameters.size()) {
+                        continue loop;
+                    }
+
+                    for (int i = 0; i < f.parameters.size(); i++) {
+                        if (parameters.get(i).type() != f.parameters.get(i).type()) {
+                            continue loop;
+                        }
+                    }
+
+                    return Optional.of(f);
+                }
+            }
         }
 
         return Optional.empty();
-    }
-
-    public String getWhitespace() {
-        StringBuilder whitespace = new StringBuilder();
-        Optional<ScopeHolder> current = head.parent;
-
-        while (current.isPresent()) {
-            ScopeHolder scope = current.get();
-
-            whitespace.append("    ");
-
-            current = scope.parent;
-        }
-
-        return whitespace.toString();
     }
 
     @Override
@@ -134,6 +146,11 @@ public class Scope implements Iterable<Scope.ScopeHolder>{
 
         @Override
         public String first() {
+            return null;
+        }
+
+        @Override
+        public String middle() {
             return null;
         }
 
@@ -167,7 +184,7 @@ public class Scope implements Iterable<Scope.ScopeHolder>{
 
     class ScopeHolder {
         Map<String, Variable> vars = new TreeMap<>();
-        Map<String, Function> functions = new TreeMap<>();
+        Map<String, List<Function>> functions = new TreeMap<>();
         Map<String, Struct> structs = new TreeMap<>();
 
         Optional<ScopeHolder> parent;
@@ -181,9 +198,5 @@ public class Scope implements Iterable<Scope.ScopeHolder>{
             this.parent = Optional.ofNullable(parent);
             this.block = block;
         }
-
-
     }
-
-
 }

@@ -44,13 +44,13 @@ public interface Value extends Typed {
         if (ctx.functionCall() != null) {
             String name = ctx.functionCall().ID().getText();
             Optional<Struct> struct = scope.getStruct(name);
-            Optional<Function> func = scope.getFunction(name);
+            boolean func = scope.functionNameExists(name);
 
-            if (func.isPresent() && struct.isPresent()) {
+            if (func && struct.isPresent()) {
                 throw new RuntimeException("There is both a struct and function named: " + name);
             }
 
-            if (func.isPresent()) {
+            if (func) {
                 return new FunctionCall(ctx.functionCall(), scope);
             }
 
@@ -103,59 +103,15 @@ public interface Value extends Typed {
                 return new Variable(parent.name + "." + v.value(), v);
             }
 
-            return new Variable(parent.name + "." + current.name, current.value.get());
+            if (current.value.isPresent()) {
+                return new Variable(parent.name + "." + current.name, current.value.get());
+            }
+
+            return new Variable(parent.name + "." + current.name, current.type());
         }
 
         throw new RuntimeException("Type of dot expression isn't implemented. " + ctx.getText());
     }
-
-    /*
-    // Struct Variable
-        if (ctx.ID().size() >= 2) {
-        List<String> structNames = ctx.ID().stream().map(id -> id.getText()).collect(Collectors.toList());
-        Optional<Variable> v = scope.getVariable(structNames.get(0));
-
-        if (!v.isPresent()) {
-            throw new RuntimeException("Invalid Variable: " + ctx.ID());
-        }
-
-        return getStructVariable(v.get(), 0, structNames);
-    }
-
-    static Variable getStructVariable(Variable current, int index, List<String> structNames) {
-
-
-        System.out.println(structNames);
-        System.out.println(index);
-        if (structNames.size() - 1 == index) {
-            return current;
-        }
-
-        String name = structNames.get(index);
-
-        if (!current.value.isPresent()) {
-            throw new RuntimeException("Should never happen, but the struct variable doesn't have a value.");
-        }
-
-        if (!(current.value.get() instanceof StructConstructor)) {
-            throw new RuntimeException("Should never happen, but the struct variable isn't a struct.");
-        }
-
-        StructConstructor structCon = (StructConstructor) current.value.get();
-
-        // We finally have the actual struct, after digging through four levels of containment.
-        // That's probably a cause of bad design. ¯\_(ツ)_/¯
-        Optional<Variable> variableInStruct = structCon.struct.getVariable(structNames.get(index + 1));
-
-        if (!variableInStruct.isPresent()) {
-            throw new RuntimeException("Struct " + name + " does not contain the variable " + name);
-        }
-
-        Variable v = getStructVariable(variableInStruct.get(), index + 1, structNames);
-
-        return new Variable(current.name + "." + v.name, v.value.get());
-    }
-    */
 
     String value();
 

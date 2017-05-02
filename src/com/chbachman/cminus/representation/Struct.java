@@ -3,14 +3,16 @@ package com.chbachman.cminus.representation;
 import com.chbachman.cminus.CMinusParser;
 import com.chbachman.cminus.representation.function.CodeBlock;
 import com.chbachman.cminus.representation.function.CreatedFunction;
+import com.chbachman.cminus.representation.function.Function;
+import com.chbachman.cminus.representation.function.ParameterList;
 import com.chbachman.cminus.representation.statement.Assignment;
 import com.chbachman.cminus.representation.statement.Return;
+import com.chbachman.cminus.representation.statement.Statement;
+import com.chbachman.cminus.representation.value.Value;
 import com.chbachman.cminus.representation.value.Variable;
 import com.chbachman.cminus.util.Lazy;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Created by Chandler on 4/15/17.
@@ -25,30 +27,48 @@ public class Struct implements CodeBlock, Typed {
         // TODO: init / deinit blocks? How will deinit work?
     }
 
-    Lazy<CreatedFunction> initFunc = new Lazy();
+    public final Set<CreatedFunction> inits = new TreeSet<>();
 
-    public CreatedFunction initFunc(Scope scope) {
-        if (initFunc.lazy()) {
-            return initFunc.get();
+    public Function createInit(CMinusParser.InitBlockContext ctx, Scope scope) {
+        List<Variable> parameters = ParameterList.parse(ctx.parameterList());
+        {
+            Optional<Function> function = getInit(parameters);
+            if (getInit(parameters).isPresent()) {
+                return function.get();
+            }
         }
 
         CreatedFunction f = new CreatedFunction(type(), "init" + name);
 
         Variable temp = new Variable("created" + name, type());
 
+        f.parameters.clear();
+        f.parameters.addAll(parameters);
+
         f.addStatement(temp);
 
+        // Add all the initialization of variables.
         for(Variable v: variables) {
             if (v.value.isPresent()) {
                 f.addStatement(new Assignment(temp.name + "." + v.name, v.value.get()));
             }
         }
 
-        // TODO: Actual init of variables of struct here.
-
         f.addStatement(new Return(temp));
 
-        return initFunc.create(f);
+        inits.add(f);
+
+        return f;
+    }
+
+    public Optional<Function> getInit(List<? extends Typed> parameters) {
+        for (CreatedFunction init: inits) {
+            if (init.matches(parameters)) {
+                return Optional.of(init);
+            }
+        }
+
+        return Optional.empty();
     }
 
     public Optional<Variable> getVariable(String name) {
@@ -64,6 +84,11 @@ public class Struct implements CodeBlock, Typed {
     @Override
     public String first() {
         return "struct " + name + " {";
+    }
+
+    @Override
+    public String middle() {
+        return "";
     }
 
     @Override
