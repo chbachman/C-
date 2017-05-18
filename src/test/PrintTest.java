@@ -1,14 +1,22 @@
 package test;
 
+import org.junit.Assert;
 import org.junit.Test;
 
-/**
- * Created by Chandler on 4/8/17.
- */
 public class PrintTest {
 
     @Test
-    public void testPrintHello() {
-        String result = CMinusTest.create("print(\"Hello, World!\");");
+    public void printHello() {
+        Assert.assertTrue(TestProgram.test("Print.cm"));
+    }
+
+    @Test
+    public void variableDeclaration() {
+        Assert.assertTrue(TestProgram.test("Variable.cm"));
+    }
+
+    @Test
+    public void structPrint() {
+        Assert.assertTrue(TestProgram.test("StructPrint.cm"));
     }
 }

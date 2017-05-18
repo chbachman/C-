@@ -1,0 +1,5 @@
+var temp = 3;
+var name = "Hello!";
+
+print(temp);
+print(name);

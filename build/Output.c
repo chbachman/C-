@@ -1,14 +1,28 @@
 #include <stdio.h>
 
-int temp();
+struct Str {
+  char *name;
+};
+struct Str string$initStr(char *str) {
+  struct Str createdStr;
+  createdStr.name = str;
+  return createdStr;
+}
 
-int temp() { return 2 + 2; }
+struct Temp {
+  int id;
+  char *name;
+};
+struct Temp initTemp() {
+  struct Temp createdTemp;
+  createdTemp.id = 2;
+  createdTemp.name = "Hello";
+  return createdTemp;
+}
 
 int main() {
-  for (int index = 1; index <= 100; index++) {
-    printf("%d\n", index);
-  }
-  int t = 2 + 1;
-  printf("%d\n", t);
+  struct Temp t = initTemp();
+  printf("%d\n", t.id);
+  printf("%s\n", t.name);
   return 0;
 }

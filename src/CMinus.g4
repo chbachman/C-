@@ -4,7 +4,6 @@ init : statements EOF ;
 
 statements: (statement | func | struct)* ;
 
-// com.chbachman.cminus.representation.function.Function Declaration
 func: 'func' ID '('parameterList?')' funcReturn? '{' codeBlock '}' ;
 parameterList: parameter (',' parameter)* ;
 parameter: ID':' type ;
@@ -14,7 +13,7 @@ struct: 'struct' ID '{' classBlock '}' ;
 
 classBlock: (variable ';' | func | initBlock)*;
 
-initBlock: 'init' ('('parameterList')')? '{' codeBlock '}';
+initBlock: 'init' '('parameterList?')' '{' codeBlock '}';
 
 type: ID ;
 
@@ -31,9 +30,11 @@ statement:
     ( control
       );
 
-variable: (VAR ID '=' value) | (VAR ID ':' type) ;
-assignment: ID '=' value ;
-functionCall: ID '(' (value (',' value)*)? ')' ;
+variable: (var='var' ID '=' value) | (var='var' ID ':' type) ;
+assignment: ID(dot)? '=' value ;
+functionCall: ID '(' argumentList? ')' ;
+argumentList: argument (',' argument)* ;
+argument: ID':' value ;
 print: PRINT '(' value ')' ;
 ret: RETURN value ;
 
@@ -77,7 +78,6 @@ INT : [0-9]+ ;
 FLOAT: [0-9]+'.'[0-9]+ ;
 
 // Reserved Keywords
-VAR: 'var' ;
 PRINT: 'print' ;
 RETURN: 'return' ;
 

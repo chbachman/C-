@@ -20,11 +20,11 @@ public class Function extends CodeBlockHolder implements Typed {
 
     private final Type type;
     private final String name;
-    public final List<Variable> parameters;
+    public List<Variable> parameters;
 
     public Function(CMinusParser.FuncContext ctx, Scope scope) {
         super(ctx.codeBlock(), scope);
-        type = ctx.funcReturn() != null ? Type.from(ctx.funcReturn().type()) : Type.Native.VOID.type;
+        type = ctx.funcReturn() != null ? Type.Companion.from(ctx.funcReturn().type()) : Type.Native.VOID.getType();
         name = ctx.ID().getText();
 
         if (ctx.parameterList() != null) {
@@ -42,7 +42,11 @@ public class Function extends CodeBlockHolder implements Typed {
     }
 
     // Checks to make sure the parameters match this function.
-    public boolean matches(List<? extends Typed> parameters) {
+    public boolean matches(String name, List<? extends Typed> parameters) {
+        if (!name.equals(this.name)) {
+            return false;
+        }
+
         if (parameters.size() != this.parameters.size()) {
             return false;
         }
@@ -63,7 +67,7 @@ public class Function extends CodeBlockHolder implements Typed {
     public String getCName() {
         StringBuilder b = new StringBuilder();
         for (Variable v : parameters) {
-            b.append(v.type.type.toLowerCase());
+            b.append(v.type.getType().toLowerCase());
             b.append('$');
         }
         b.append(name);

@@ -1,6 +1,7 @@
 package com.chbachman.cminus.representation.control;
 
 import com.chbachman.cminus.CMinusParser;
+import com.chbachman.cminus.representation.Parser;
 import com.chbachman.cminus.representation.Scope;
 import com.chbachman.cminus.representation.Type;
 import com.chbachman.cminus.representation.function.CodeBlockHolder;
@@ -25,14 +26,14 @@ public class ForStatement extends CodeBlockHolder implements Control {
     public ForStatement(CMinusParser.ForStatementContext ctx, Scope scope) {
         CMinusParser.RangeContext range = ctx.range();
 
-        minimum = Value.parse(range.value(0), scope);
-        maximum = Value.parse(range.value(1), scope);
+        minimum = Parser.parse(range.value(0), scope);
+        maximum = Parser.parse(range.value(1), scope);
 
-        if (minimum.type() != Type.Native.INT.type || maximum.type() != Type.Native.INT.type) {
+        if (minimum.type() != Type.Native.INT.getType() || maximum.type() != Type.Native.INT.getType()) {
             throw new RuntimeException("For Loop without int range. " + range.getText());
         }
 
-        index = new Variable(range.ID().getText(), Type.Native.INT.type);
+        index = new Variable(range.ID().getText(), Type.Native.INT.getType());
 
         // Call super constructor
         init(ctx.codeBlock(), scope);

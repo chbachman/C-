@@ -1,6 +1,7 @@
 package com.chbachman.cminus.representation.statement;
 
 import com.chbachman.cminus.CMinusParser;
+import com.chbachman.cminus.representation.Parser;
 import com.chbachman.cminus.representation.Scope;
 import com.chbachman.cminus.representation.Type;
 import com.chbachman.cminus.representation.value.Value;
@@ -14,9 +15,9 @@ public class Print implements Statement {
     public final String modifier;
 
     public Print(CMinusParser.PrintContext ctx, Scope scope) {
-        this.value = Value.parse(ctx.value(), scope);
+        this.value = Parser.parse(ctx.value(), scope);
 
-        switch (Type.Native.get(value.type())) {
+        switch (Type.Native.Companion.get(value.type())) {
             case INT: modifier = "%d"; break;
             case STRING: modifier = "%s"; break;
             case BOOL: modifier = "%s"; break;
@@ -26,7 +27,7 @@ public class Print implements Statement {
 
     @Override
     public String code() {
-        if (value.type() == Type.Native.BOOL.type) {
+        if (value.type() == Type.Native.BOOL.getType()) {
             return "printf(\"" + modifier + "\\n\", " + value.value() + " ? \"true\" : \"false\");";
         }
         return "printf(\"" + modifier + "\\n\", " + value.value() + ");";

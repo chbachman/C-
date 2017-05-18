@@ -2,6 +2,7 @@ package com.chbachman.cminus.representation.value;
 
 import com.chbachman.cminus.CMinusParser;
 import com.chbachman.cminus.Start;
+import com.chbachman.cminus.representation.Parser;
 import com.chbachman.cminus.representation.Scope;
 import com.chbachman.cminus.representation.Type;
 import com.chbachman.cminus.representation.statement.Statement;
@@ -18,23 +19,19 @@ public class Variable implements Value, Statement {
     public Optional<Value> value;
     public final Type type;
     public final boolean newVariable;
-    private Optional<String> container;
 
     public Variable(CMinusParser.VariableContext ctx, Scope scope) {
         this.name = ctx.ID().getText();
 
-        newVariable = ctx.VAR() != null;
+        newVariable = ctx.var != null;
 
         if (ctx.value() != null) {
-            this.value = Optional.of(Value.parse(ctx.value(), scope));
+            this.value = Optional.of(Parser.parse(ctx.value(), scope));
             this.type = this.value.get().type();
         } else {
-            this.type = Type.from(ctx.type());
+            this.type = Type.Companion.from(ctx.type());
             this.value = Optional.empty();
         }
-
-
-        scope.addVariable(this);
     }
 
     public Variable(CMinusParser.ParameterContext ctx) {
@@ -42,7 +39,7 @@ public class Variable implements Value, Statement {
 
         newVariable = true;
 
-        this.type = Type.from(ctx.type());
+        this.type = Type.Companion.from(ctx.type());
         this.value = Optional.empty();
     }
 
@@ -57,6 +54,13 @@ public class Variable implements Value, Statement {
         this.name = name;
         this.value = Optional.empty();
         this.type = t.type();
+        this.newVariable = true;
+    }
+
+    public Variable(Variable parent, Variable child) {
+        this.name = parent.name + "." + child.name;
+        this.value = child.value;
+        this.type = child.type;
         this.newVariable = true;
     }
 

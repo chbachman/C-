@@ -1,11 +1,19 @@
-func temp() -> Int {
-    return 2 + 2;
+struct Str {
+  var name: String;
+
+  init (str: String) {
+    name = str;
+  }
 }
 
-for index in 1..100 {
-  print(index);
+struct Temp {
+  var id = 2;
+  var name = "Hello";
+
+  init (){}
 }
 
-var t = 2 + 1;
+var t = Temp();
 
-print(t);
+print(t.id);
+print(t.name);

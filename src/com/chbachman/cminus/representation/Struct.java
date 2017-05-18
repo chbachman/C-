@@ -2,79 +2,48 @@ package com.chbachman.cminus.representation;
 
 import com.chbachman.cminus.CMinusParser;
 import com.chbachman.cminus.representation.function.CodeBlock;
-import com.chbachman.cminus.representation.function.CreatedFunction;
-import com.chbachman.cminus.representation.function.Function;
-import com.chbachman.cminus.representation.function.ParameterList;
-import com.chbachman.cminus.representation.statement.Assignment;
-import com.chbachman.cminus.representation.statement.Return;
-import com.chbachman.cminus.representation.statement.Statement;
-import com.chbachman.cminus.representation.value.Value;
 import com.chbachman.cminus.representation.value.Variable;
-import com.chbachman.cminus.util.Lazy;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by Chandler on 4/15/17.
+ * Handles structs in C-
+ * Converts them to C structs and creates methods to allow for initialization.
  */
-public class Struct implements CodeBlock, Typed {
+public class Struct implements CodeBlock, Typed, VariableHolder {
 
     String name;
-    public final List<Variable> variables = new ArrayList<>();
+    final List<Variable> variables;
+    private final List<InitBlock> inits;
 
     public Struct(CMinusParser.StructContext ctx, Scope scope) {
         this.name = ctx.ID().getText();
+
+        this.variables = ctx.classBlock().variable().stream().map(v -> new Variable(v, scope)).collect(Collectors.toList());
+        this.inits = ctx.classBlock().initBlock().stream().map(i -> new InitBlock(i, this, scope)).collect(Collectors.toList());
+
         // TODO: init / deinit blocks? How will deinit work?
     }
 
-    public final Set<CreatedFunction> inits = new TreeSet<>();
-
-    public Function createInit(CMinusParser.InitBlockContext ctx, Scope scope) {
-        List<Variable> parameters = ParameterList.parse(ctx.parameterList());
-        {
-            Optional<Function> function = getInit(parameters);
-            if (getInit(parameters).isPresent()) {
-                return function.get();
-            }
-        }
-
-        CreatedFunction f = new CreatedFunction(type(), "init" + name);
-
-        Variable temp = new Variable("created" + name, type());
-
-        f.parameters.clear();
-        f.parameters.addAll(parameters);
-
-        f.addStatement(temp);
-
-        // Add all the initialization of variables.
-        for(Variable v: variables) {
-            if (v.value.isPresent()) {
-                f.addStatement(new Assignment(temp.name + "." + v.name, v.value.get()));
-            }
-        }
-
-        f.addStatement(new Return(temp));
-
-        inits.add(f);
-
-        return f;
-    }
-
-    public Optional<Function> getInit(List<? extends Typed> parameters) {
-        for (CreatedFunction init: inits) {
-            if (init.matches(parameters)) {
-                return Optional.of(init);
-            }
-        }
-
-        return Optional.empty();
-    }
-
-    public Optional<Variable> getVariable(String name) {
+    @NotNull
+    public Variable getVariable(String name) {
         for (Variable variable : variables) {
             if (variable.name.equals(name)) {
-                return Optional.of(variable);
+                return variable;
+            }
+        }
+
+        return null;
+    }
+
+    public Optional<InitBlock> getInit(String name, List<? extends Typed> parameters) {
+        name = "init" + name;
+        for (InitBlock init: inits) {
+            if (init.matches(name, parameters)) {
+                return Optional.of(init);
             }
         }
 
@@ -88,16 +57,29 @@ public class Struct implements CodeBlock, Typed {
 
     @Override
     public String middle() {
-        return "";
+        StringBuilder vars = new StringBuilder();
+
+        for (Variable v : variables) {
+            // Convert variable to one without a value.
+            vars.append(new Variable(v.name, v.type()).code());
+        }
+
+        return vars.toString();
     }
 
     @Override
     public String last() {
-        return "};\n";
+        StringBuilder initFunc = new StringBuilder("};\n");
+
+        for (InitBlock f : inits) {
+            initFunc.append(f.code());
+        }
+
+        return initFunc.toString();
     }
 
     @Override
     public Type type() {
-        return Type.from(this);
+        return Type.Companion.from(this);
     }
 }

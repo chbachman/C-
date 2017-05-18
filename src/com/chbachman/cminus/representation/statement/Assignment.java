@@ -1,6 +1,7 @@
 package com.chbachman.cminus.representation.statement;
 
 import com.chbachman.cminus.CMinusParser;
+import com.chbachman.cminus.representation.Parser;
 import com.chbachman.cminus.representation.Scope;
 import com.chbachman.cminus.representation.Type;
 import com.chbachman.cminus.representation.value.Value;
@@ -17,16 +18,18 @@ public class Assignment implements Value, Statement {
     final Value value;
 
     public Assignment(CMinusParser.AssignmentContext ctx, Scope scope) {
-        this.name = ctx.ID().getText();
-        System.out.println(name);
-        this.value = Value.parse(ctx.value(), scope);
+        String name = ctx.ID().getText();
+        this.value = Parser.parse(ctx.value(), scope);
 
-        Optional<Variable> var = scope.getVariable(name);
+        Variable var = scope.getVariable(name);
 
-        if (var.isPresent()) {
-            Variable v = var.get();
+        if (var != null) {
+            Variable v = var;
 
             v.value = Optional.of(value);
+            this.name = v.name;
+        } else {
+            throw new RuntimeException("Could not find variable: " + name);
         }
     }
 

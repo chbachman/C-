@@ -1,6 +1,7 @@
 package com.chbachman.cminus.representation.control;
 
 import com.chbachman.cminus.CMinusParser;
+import com.chbachman.cminus.representation.Parser;
 import com.chbachman.cminus.representation.Scope;
 import com.chbachman.cminus.representation.function.CodeBlockHolder;
 import com.chbachman.cminus.representation.statement.Statement;
@@ -20,7 +21,7 @@ public class IfStatement extends CodeBlockHolder implements Control {
 
     public IfStatement(CMinusParser.IfStatementContext ctx, Scope scope) {
         super(ctx.codeBlock().get(0), scope);
-        this.value = Value.parse(ctx.value(0), scope);
+        this.value = Parser.parse(ctx.value(0), scope);
     }
 
     @Override

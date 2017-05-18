@@ -1,17 +1,21 @@
 package com.chbachman.cminus.representation.value;
 
 import com.chbachman.cminus.CMinusParser;
+import com.chbachman.cminus.representation.Parser;
 import com.chbachman.cminus.representation.Scope;
 import com.chbachman.cminus.representation.Type;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Created by Chandler on 4/14/17.
+ * Handles basic operations such as * / - $ and ==
+ * TODO: Allow for custom operator overloading
  */
 public class Operation implements Value {
 
-    public final String operation;
-    public final Value left;
-    public final Value right;
+    private final String operation;
+    private final Value left;
+    private final Value right;
 
     public Operation(CMinusParser.ValueContext ctx, Scope scope) {
         switch (ctx.op.getText()) {
@@ -25,8 +29,8 @@ public class Operation implements Value {
             default: throw new RuntimeException("Operation " + ctx.getText() + " is not implemented.");
         }
 
-        left = Value.parse(ctx.value(0), scope);
-        right = Value.parse(ctx.value(1), scope);
+        left = Parser.parse(ctx.value(0), scope);
+        right = Parser.parse(ctx.value(1), scope);
 
         if (left.type() != right.type()) {
             throw new RuntimeException("Types of " + ctx.getText() + " are not the same.");
@@ -40,6 +44,7 @@ public class Operation implements Value {
     }
 
     @Override
+    @NotNull
     public String value() {
         return left.value() + " " + operation + " " + right.value();
     }
