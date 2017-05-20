@@ -68,7 +68,7 @@ ifStatement:
     'if' value '{' codeBlock '}' ('else if' value '{' codeBlock '}')*? ('else' '{' codeBlock '}')?;
 
 forStatement: 'for' range '{' codeBlock '}' ;
-range: ID 'in' value'..'value ;
+range: ID 'in' value'...'value ;
 
 // Literals
 literal: STRING | INT | FLOAT | BOOL;

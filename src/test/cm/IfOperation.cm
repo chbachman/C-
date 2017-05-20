@@ -1,0 +1,5 @@
+if 2+2/2 == 3 {
+    print("Math works!");
+}
+
+print("Math may or may not work!");
