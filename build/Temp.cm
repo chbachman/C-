@@ -1,10 +1,13 @@
-func printHello() {
-    print("Hello, World!");
+struct Animal {
+    var name = "Cow";
+    var age = 4;
+
+    init () {
+
+    }
 }
 
-func printHello(str: String) {
-    print("Hello, " + str);
-}
+var cow = Animal();
 
-printHello();
-printHello(str: "Billy Bob");
+print(cow.name);
+print(cow.age);

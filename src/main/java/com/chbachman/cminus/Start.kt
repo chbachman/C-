@@ -5,10 +5,10 @@ import com.chbachman.cminus.gen.CMinusLexer
 import com.chbachman.cminus.gen.CMinusParser
 import com.chbachman.cminus.representation.Parser
 import com.chbachman.cminus.representation.Scope
-import com.chbachman.cminus.representation.Struct
-import com.chbachman.cminus.representation.Type
 import com.chbachman.cminus.representation.function.Function
+import com.chbachman.cminus.representation.function.FunctionHeader
 import com.chbachman.cminus.representation.function.MainFunction
+import com.chbachman.cminus.representation.struct.StructHeader
 import com.chbachman.cminus.representation.value.Variable
 import com.chbachman.cminus.util.Run
 import org.antlr.v4.runtime.CharStream
@@ -17,20 +17,28 @@ import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.tree.ParseTreeWalker
 import java.io.File
 import java.io.PrintStream
-import java.util.*
 
-class Start constructor(inputPath: String, outputPath: String) {
+class Start constructor(inputPath: String, outputPath: String, run: Boolean = true) {
+
+    // Main Method, all it does is init Type and create Start.
+    companion object {
+        @JvmStatic fun main(args: Array<String>) {
+            if (args.size < 2) {
+                throw RuntimeException("Need input and output files.")
+            }
+
+            Start(args[0], args[1], true)
+        }
+    }
 
     val input = File(inputPath)
     val output = File(outputPath)
 
-    private var parser = generateTree(CharStreams.fromFileName(inputPath))
-    private var out = PrintStream(output)
-    var run = false
+    private val parser = generateTree(CharStreams.fromFileName(inputPath))
+    private val out = PrintStream(output)
 
     init {
         val tree = parser.init()
-        val scope = Scope()
         val walker = ParseTreeWalker()
 
         // TODO: Make this more general
@@ -42,7 +50,7 @@ class Start constructor(inputPath: String, outputPath: String) {
         // So we do a dry run to init everything before accessing it ourselves.
         walker.walk(NOOP(), tree)
 
-        init(tree.statements(), scope)
+        init(tree.statements())
 
         // Why bother trying to format it ourselves, when we can just have clang do it for us.
         Run.command("clang-format -i " + output.canonicalPath)
@@ -52,10 +60,6 @@ class Start constructor(inputPath: String, outputPath: String) {
         }
     }
 
-    constructor(inputPath: String, outputPath: String, run: Boolean): this(inputPath, outputPath) {
-        this.run = run
-    }
-
     internal fun generateTree(input: CharStream): CMinusParser {
         val lexer = CMinusLexer(input)
         val tokens = CommonTokenStream(lexer)
@@ -63,67 +67,51 @@ class Start constructor(inputPath: String, outputPath: String) {
         return parser
     }
 
-    companion object {
-        @JvmStatic fun main(args: Array<String>) {
-            if (args.size < 2) {
-                throw RuntimeException("Need input and output files.")
-            }
+    fun init(ctx: CMinusParser.StatementsContext) {
+        val structs = ctx.struct().map { StructHeader(it) }
 
-            Type.init()
-            Start(args[0], args[1], true)
-        }
-    }
+        // Every "Function Header" has to implement a conversion to a regular FunctionType
+        // This allows pre-declaration of all the global functions.
+        // Somewhere along the line, functions need to either get qualified with scope or name
+        val functions = ctx.func().map { FunctionHeader(it) } + structs.flatMap { it.inits }
 
-    fun init(ctx: CMinusParser.StatementsContext, scope: Scope) {
+        val scope = Scope(functions, structs)
 
-        for (s in ctx.struct()) {
-            val struct = Struct(s, scope)
-
-            scope.addStruct(struct)
-
-            out.println(struct.first)
-            out.println(struct.middle)
-            out.println(struct.last)
+        scope.structs.values.forEach {
+            out.println(it.getStruct(scope).code())
         }
 
-        createFunctions(ctx.func(), scope)
+        // Get all function headers, and print them all out.
+        scope.functions.flatMap {
+            it.value
+        }.forEach {
+            out.println(it.header)
+        }
+
+        out.println()
+
+        // Get all regular functions, and print those out too.
+        scope.functions.flatMap {
+            it.value.map { it.getFunc(scope) }
+        }.forEach {
+            out.println(it.code())
+        }
 
         // Handle Main Function
-        val f = MainFunction()
-        out.println(f.first)
-        scope.pushScope(f)
+        val main = MainFunction()
+        out.println(main.first)
+        scope.pushScope(main)
 
-        for (s in ctx.statement()) {
-            val statement = Parser.parse(s, scope)
-            if (statement is Variable) {
-                scope.addVariable(statement)
+        ctx.statement().map {
+            Parser.parse(it, scope)
+        }.forEach {
+            if (it is Variable) {
+                scope.addVariable(it)
             }
-            out.println(statement.code())
+            out.println(it.code())
         }
 
         out.println(scope.popScope().last)
-    }
-
-    fun createFunctions(input: List<CMinusParser.FuncContext>, scope: Scope) {
-        val functions = ArrayList<Function>(input.size)
-
-        for (f in input) {
-            val func = Function(f, scope)
-            functions.add(func)
-        }
-
-        for (f in functions) {
-            out.println(f.header)
-        }
-
-        out.println()
-
-        for (f in functions) {
-            out.println(f.code())
-            out.println()
-        }
-
-        out.println()
     }
 
     class NOOP : CMinusBaseListener()

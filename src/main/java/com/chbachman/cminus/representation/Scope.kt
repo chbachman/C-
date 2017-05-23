@@ -1,29 +1,31 @@
 package com.chbachman.cminus.representation
 
 import com.chbachman.cminus.representation.function.CodeBlock
-import com.chbachman.cminus.representation.function.Function
+import com.chbachman.cminus.representation.function.FunctionHeader
+import com.chbachman.cminus.representation.function.Header
+import com.chbachman.cminus.representation.struct.StructHeader
 import com.chbachman.cminus.representation.value.Variable
-
-import java.util.*
+import com.chbachman.cminus.util.*
 
 /**
  * Created by Chandler on 4/12/17.
  * Handles the declaration of variables. Uses a stack to represent the current scope.
  * Also handles structs and function declarations, but on a global scope.
  */
-class Scope {
+class Scope(functions: List<Header>, structs: List<StructHeader>) {
 
-    private val stack = ArrayDeque<ScopeHolder>()
-    private val structs = TreeMap<String, Struct>()
+    private val stack = mutableListOf<ScopeHolder>()
+    val structs = structs.associateBy { it.name }
+    val functions = functions.groupBy { it.baseName }
 
     // Set the "this" containing variable.
     fun setThis(variable: Variable, container: VariableHolder) {
-        stack.peek().thisVar = Pair(variable, container)
+        stack.peek()?.thisVar = Pair(variable, container)
     }
 
     // Remove the current scope.
     fun popScope(): CodeBlock {
-        return stack.pop().block
+        return stack.pop()?.block ?: throw RuntimeException("Could not pop empty stack.")
     }
 
     // Add to scope.
@@ -33,10 +35,11 @@ class Scope {
     }
 
     fun addVariable(v: Variable) {
-        stack.peek().vars.put(v.name, v)
+        stack.peek()?.vars?.put(v.name, v)
     }
 
     fun getVariable(name: String): Variable? {
+
         for (scope in stack) {
             if (scope.vars.containsKey(name)) {
                 return scope.vars[name]
@@ -52,56 +55,8 @@ class Scope {
         return null
     }
 
-    fun addFunction(f: Function?) {
-        if (f == null) {
-            return
-        }
-
-        if (getFunction(f.baseName, f.parameters) != null) {
-            throw RuntimeException("The function ${f.baseName} already exists.")
-        }
-
-        if (stack.peek().functions.containsKey(f.baseName)) {
-            stack.peek().functions[f.baseName]!!.add(f)
-            return
-        }
-
-        val newList = ArrayList<Function>()
-        newList.add(f)
-
-        stack.peek().functions.put(f.baseName, newList)
-    }
-
-    fun addStruct(s: Struct) {
-        structs.put(s.name, s)
-    }
-
-    fun getStruct(name: String): Struct? {
-        return structs[name]
-    }
-
-    fun getFunction(name: String, parameters: List<Typed>): Function? {
-        return stack.find { scope ->
-            scope.functions.containsKey(name)
-        }?.functions?.get(name)?.find { f ->
-            f.matches(name, parameters)
-        }
-    }
-
-    fun functionExists(name: String): Boolean {
-        return stack.find { scope ->
-            scope.functions.containsKey(name)
-        } !== null
-    }
-
-    fun functionExists(name: String, parameters: List<Typed>): Boolean {
-        return getFunction(name, parameters) !== null
-    }
-
-    internal inner class ScopeHolder(val block: CodeBlock) {
-        var vars: MutableMap<String, Variable> = TreeMap()
-        var functions: MutableMap<String, MutableList<Function>> = TreeMap()
-
+    private inner class ScopeHolder(val block: CodeBlock) {
+        var vars: MutableMap<String, Variable> = hashMapOf()
         var thisVar: Pair<Variable, VariableHolder>? = null
 
         fun getThis(name: String): Variable? {
@@ -109,3 +64,12 @@ class Scope {
         }
     }
 }
+
+operator fun Map<String, List<Header>>.get(name: String, parameters: List<Typed>): Header? {
+    val functions = this[name]
+
+    functions ?: return null
+
+    return functions.find { it.matches(name, parameters) }
+}
+

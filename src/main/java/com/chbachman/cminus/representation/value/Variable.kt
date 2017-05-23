@@ -12,20 +12,30 @@ import java.util.Optional
  * Created by Chandler on 4/12/17.
  */
 class Variable private constructor(
-        name: String,
-        value: Value?,
-        type: Type
+        val name: String,
+        val value: Value?,
+        override val type: Type,
+        val new: Boolean = true
 ) : Value, Statement {
 
-    val name = name
-    val value = value
-    override val type = type
-    private var newVariable = true
-
     constructor(ctx: CMinusParser.VariableContext, scope: Scope):
-            this(ctx.ID().text, Parser.parse(ctx.value(), scope), Type.from(ctx.type())) {
+            this(ctx.ID().text, makeValue(ctx, scope), makeType(ctx, scope), ctx.`var` != null) {
+        if (new) {
+            scope.addVariable(this)
+        }
+    }
 
-        newVariable = ctx.`var` != null
+    companion object {
+        fun makeValue(ctx: CMinusParser.VariableContext, scope: Scope): Value? {
+            return ctx.value()?.let { Parser.parse(it, scope) }
+        }
+
+        fun makeType(ctx: CMinusParser.VariableContext, scope: Scope): Type {
+            val type = ctx.type()?.let { Type.from(it) }
+            val value = makeValue(ctx, scope)
+
+            return value?.type ?: (type ?: throw IllegalStateException("Variable has no type or value"))
+        }
     }
 
     // Two main constructors
@@ -39,7 +49,7 @@ class Variable private constructor(
         if (value != null) {
             var code = ""
             // Add the Type to make it a new variable
-            if (newVariable) {
+            if (new) {
                 code = value.type.code() + " "
             }
 

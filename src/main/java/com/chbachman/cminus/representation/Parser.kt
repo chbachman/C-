@@ -2,11 +2,14 @@ package com.chbachman.cminus.representation
 
 import com.chbachman.cminus.gen.CMinusParser
 import com.chbachman.cminus.representation.control.Control
+import com.chbachman.cminus.representation.control.ForStatement
+import com.chbachman.cminus.representation.control.IfStatement
 import com.chbachman.cminus.representation.statement.*
 import com.chbachman.cminus.representation.value.*
 
 /**
  * Created by Chandler on 5/17/17.
+ * Handles Parsing of Different types of Contexts
  */
 object Parser {
 
@@ -102,7 +105,7 @@ object Parser {
         }
 
         if (ctx.control() != null) {
-            return Control.parse(ctx.control(), scope)
+            return parse(ctx.control(), scope)
         }
 
         throw RuntimeException("The statement type: " + ctx.text + " is not implemented yet.")
@@ -116,10 +119,10 @@ object Parser {
     @JvmStatic
     fun parse(ctx: CMinusParser.FunctionCallContext, scope: Scope): FunctionCall {
         val name = ctx.ID().text
-        val struct = scope.getStruct(name)
-        val func = scope.functionExists(name)
+        val struct = scope.structs[name] != null
+        val func = scope.functions[name]?.isNotEmpty() ?: false
 
-        if (func && struct != null) {
+        if (func && struct) {
             throw RuntimeException("There is both a struct and function named: $name")
         }
 
@@ -127,11 +130,34 @@ object Parser {
             return FunctionCall(ctx, scope)
         }
 
-        if (struct != null) {
+        if (struct) {
             return StructConstructor(ctx, scope)
         }
 
         throw RuntimeException("The function type: ${ctx.text} is not implemented yet.")
+    }
+
+    @JvmStatic
+    fun parse(ctx: CMinusParser.ParameterListContext): List<Variable> {
+        return ctx.parameter().map { Variable(it) }
+    }
+
+    @JvmStatic
+    fun parse(ctx: CMinusParser.ArgumentListContext?, scope: Scope): List<Value> {
+        return ctx?.argument()?.map { Parser.parse(it.value(), scope) } ?: emptyList()
+    }
+
+    @JvmStatic
+    fun parse(ctx: CMinusParser.ControlContext, scope: Scope): Control {
+        if (ctx.ifStatement() != null) {
+            return IfStatement(ctx.ifStatement(), scope)
+        }
+
+        if (ctx.forStatement() != null) {
+            return ForStatement(ctx.forStatement(), scope)
+        }
+
+        throw RuntimeException("Control Statement: " + ctx.text + " has not been implemented yet.")
     }
 
 }

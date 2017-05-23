@@ -3,7 +3,7 @@ func printHello() {
 }
 
 func printHello(str: String) {
-    print("Hello, " + str);
+    print("Hello, ");
 }
 
 printHello();

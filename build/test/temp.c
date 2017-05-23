@@ -1,8 +1,11 @@
 #include <stdio.h>
 
-int main() {
-  if (1) {
-    printf("%s\n", "Hello, World!");
-  }
-  return 0;
+struct Animal initAnimal ();
+
+struct Animal initAnimal () {struct Animal createdAnimal;
+createdAnimal.name = "Cow";
+createdAnimal.age = 4;
+return createdAnimal;
 }
+
+int main () {
