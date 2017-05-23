@@ -14,7 +14,7 @@ import com.chbachman.cminus.representation.value.*
 object Parser {
 
     @JvmStatic
-    fun parse(ctx: CMinusParser.ValueContext, scope: Scope): Value {
+    fun parse(ctx: CMinusParser.ValueContext, scope: Scope): Expression {
         // Regular, non struct variable.
         if (ctx.ID() != null) {
             val name = ctx.ID().text
@@ -50,7 +50,7 @@ object Parser {
     }
 
     @JvmStatic
-    fun parse(ctx: CMinusParser.DotContext, parent: Variable, scope: Scope): Value {
+    fun parse(ctx: CMinusParser.DotContext, parent: Variable, scope: Scope): Expression {
         if (ctx.functionCall() != null) {
             return FunctionCall(ctx.functionCall(), scope)
         }
@@ -68,7 +68,7 @@ object Parser {
             // Recursive dot parsing. If we have a dot, create the variable and move on.
             if (ctx.dot() != null) {
                 val v = parse(ctx.dot(), current, scope)
-                return Variable("${parent.name}.${v.value()}", v)
+                return Variable("${parent.name}.${v.expression}", v)
             }
 
             if (current.value != null) {
@@ -143,7 +143,7 @@ object Parser {
     }
 
     @JvmStatic
-    fun parse(ctx: CMinusParser.ArgumentListContext?, scope: Scope): List<Value> {
+    fun parse(ctx: CMinusParser.ArgumentListContext?, scope: Scope): List<Expression> {
         return ctx?.argument()?.map { Parser.parse(it.value(), scope) } ?: emptyList()
     }
 

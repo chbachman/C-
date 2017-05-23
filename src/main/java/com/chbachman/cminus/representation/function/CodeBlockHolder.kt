@@ -1,12 +1,10 @@
 package com.chbachman.cminus.representation.function
 
-import com.chbachman.cminus.gen.CMinusParser
-import com.chbachman.cminus.representation.Parser
-import com.chbachman.cminus.representation.Scope
-import com.chbachman.cminus.representation.statement.Statement
+import com.chbachman.cminus.representation.value.Statement
 
 /**
  * Created by Chandler on 5/2/17.
+ * Default Implementation of CodeBlock, handles Middle
  */
 abstract class CodeBlockHolder : CodeBlock {
 
@@ -17,7 +15,7 @@ abstract class CodeBlockHolder : CodeBlock {
             val b = StringBuilder()
 
             for (s in statements) {
-                b.append(s.code())
+                b.append(s.statement)
                 b.append('\n')
             }
 

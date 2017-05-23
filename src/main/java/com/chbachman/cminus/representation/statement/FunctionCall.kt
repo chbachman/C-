@@ -6,13 +6,14 @@ import com.chbachman.cminus.representation.Scope
 import com.chbachman.cminus.representation.Type
 import com.chbachman.cminus.representation.function.Header
 import com.chbachman.cminus.representation.get
-import com.chbachman.cminus.representation.value.Value
+import com.chbachman.cminus.representation.value.Expression
+import com.chbachman.cminus.representation.value.Statement
 
 /**
  * Created by Chandler on 4/12/17.
  * Represents a function call.
  */
-open class FunctionCall(ctx: CMinusParser.FunctionCallContext, scope: Scope): Value, Statement {
+open class FunctionCall(ctx: CMinusParser.FunctionCallContext, scope: Scope): Expression, Statement {
     internal val name = ctx.ID().text
     internal var parameters = Parser.parse(ctx.argumentList(), scope)
     override val type: Type
@@ -44,24 +45,24 @@ open class FunctionCall(ctx: CMinusParser.FunctionCallContext, scope: Scope): Va
         }
     }
 
-    override fun code(): String {
-        return value() + ';'
-    }
+    override val statement: String
+        get() = expression + ';'
 
-    override fun value(): String {
-        val s = StringBuilder(ref.cName)
-                .append('(')
+    override val expression: String
+        get() {
+            val s = StringBuilder(ref.cName)
+                    .append('(')
 
-        for (value in parameters) {
-            s.append(value.value()).append(", ")
+            for (value in parameters) {
+                s.append(value.expression).append(", ")
+            }
+
+            if (!parameters.isEmpty()) {
+                s.delete(s.length - 2, s.length)
+            }
+
+            s.append(')')
+
+            return s.toString()
         }
-
-        if (!parameters.isEmpty()) {
-            s.delete(s.length - 2, s.length)
-        }
-
-        s.append(')')
-
-        return s.toString()
-    }
 }

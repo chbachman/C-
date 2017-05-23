@@ -9,12 +9,9 @@ import com.chbachman.cminus.representation.Type
  * Created by Chandler on 4/14/17.
  * Handles Parenthesis around values.
  */
-class Paren(ctx: CMinusParser.ValueContext, scope: Scope) : Value {
+class Paren(ctx: CMinusParser.ValueContext, scope: Scope) : Expression {
     private val value = Parser.parse(ctx.value(0), scope)
 
     override val type = value.type
-
-    override fun value(): String {
-        return "(${value.value()})"
-    }
+    override val expression = "(${value.expression})"
 }

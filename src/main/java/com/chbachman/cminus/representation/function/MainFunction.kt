@@ -2,7 +2,7 @@ package com.chbachman.cminus.representation.function
 
 import com.chbachman.cminus.representation.Scope
 import com.chbachman.cminus.representation.Type
-import com.chbachman.cminus.representation.statement.Statement
+import com.chbachman.cminus.representation.value.Statement
 import com.chbachman.cminus.representation.value.Variable
 
 /**

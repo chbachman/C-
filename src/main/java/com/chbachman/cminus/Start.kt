@@ -78,7 +78,7 @@ class Start constructor(inputPath: String, outputPath: String, run: Boolean = tr
         val scope = Scope(functions, structs)
 
         scope.structs.values.forEach {
-            out.println(it.getStruct(scope).code())
+            out.println(it.getStruct(scope).statement)
         }
 
         // Get all function headers, and print them all out.
@@ -94,7 +94,7 @@ class Start constructor(inputPath: String, outputPath: String, run: Boolean = tr
         scope.functions.flatMap {
             it.value.map { it.getFunc(scope) }
         }.forEach {
-            out.println(it.code())
+            out.println(it.statement)
         }
 
         // Handle Main Function
@@ -108,7 +108,7 @@ class Start constructor(inputPath: String, outputPath: String, run: Boolean = tr
             if (it is Variable) {
                 scope.addVariable(it)
             }
-            out.println(it.code())
+            out.println(it.statement)
         }
 
         out.println(scope.popScope().last)

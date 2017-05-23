@@ -7,7 +7,7 @@ import com.chbachman.cminus.representation.function.FunctionType
 import com.chbachman.cminus.representation.function.Header
 import com.chbachman.cminus.representation.statement.Assignment
 import com.chbachman.cminus.representation.statement.Return
-import com.chbachman.cminus.representation.statement.Statement
+import com.chbachman.cminus.representation.value.Statement
 import com.chbachman.cminus.representation.value.Variable
 
 /**

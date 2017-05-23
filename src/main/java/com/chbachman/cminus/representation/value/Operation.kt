@@ -10,37 +10,30 @@ import com.chbachman.cminus.representation.Type
  * Handles basic operations such as * / - $ and ==
  * TODO: Allow for custom operator overloading
  */
-class Operation(ctx: CMinusParser.ValueContext, scope: Scope) : Value {
-    val operation: String
-    val left: Value
-    val right: Value
+class Operation(ctx: CMinusParser.ValueContext, scope: Scope) : Expression {
+    val operation = when (ctx.op.text) {
+        "^" -> "^"
+        "*" -> "*"
+        "/" -> "/"
+        "+" -> "+"
+        "-" -> "-"
+        "%" -> "%"
+        "==" -> "=="
+        "!=" -> "!="
+        else -> throw RuntimeException("Operation " + ctx.text + " is not implemented.")
+    }
+
+    val left = Parser.parse(ctx.value(0), scope)
+    val right = Parser.parse(ctx.value(1), scope)
 
     init {
-        operation = when (ctx.op.text) {
-            "^" -> "^"
-            "*" -> "*"
-            "/" -> "/"
-            "+" -> "+"
-            "-" -> "-"
-            "%" -> "%"
-            "==" -> "=="
-            "!=" -> "!="
-            else -> throw RuntimeException("Operation " + ctx.text + " is not implemented.")
-        }
-
-        left = Parser.parse(ctx.value(0), scope)
-        right = Parser.parse(ctx.value(1), scope)
-
         if (left.type !== right.type) {
             throw RuntimeException("Types of " + ctx.text + " are not the same.")
         }
-
     }
 
     override val type: Type
         get() = left.type
 
-    override fun value(): String {
-        return left.value() + " " + operation + " " + right.value()
-    }
+    override val expression = "${left.expression} $operation ${right.expression}"
 }

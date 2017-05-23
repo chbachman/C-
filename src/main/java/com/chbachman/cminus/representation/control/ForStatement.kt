@@ -4,19 +4,19 @@ import com.chbachman.cminus.gen.CMinusParser
 import com.chbachman.cminus.representation.Parser
 import com.chbachman.cminus.representation.Scope
 import com.chbachman.cminus.representation.Type
-import com.chbachman.cminus.representation.function.CodeBlock
 import com.chbachman.cminus.representation.function.CodeBlockHolder
-import com.chbachman.cminus.representation.statement.Statement
-import com.chbachman.cminus.representation.value.Value
+import com.chbachman.cminus.representation.value.Statement
+import com.chbachman.cminus.representation.value.Expression
 import com.chbachman.cminus.representation.value.Variable
 
 /**
  * Created by Chandler on 4/14/17.
+ * Handles the various types of For Loops
  */
 class ForStatement(ctx: CMinusParser.ForStatementContext, scope: Scope) : CodeBlockHolder(), Control {
 
-    private val minimum: Value
-    private val maximum: Value
+    private val minimum: Expression
+    private val maximum: Expression
 
     private val index: Variable
 
@@ -46,7 +46,7 @@ class ForStatement(ctx: CMinusParser.ForStatementContext, scope: Scope) : CodeBl
     override val first: String
         get() {
             val i = index.name
-            return "for (int $i = ${minimum.value()}; $i <= ${maximum.value()}; $i++) {"
+            return "for (int $i = ${minimum.expression}; $i <= ${maximum.expression}; $i++) {"
         }
 
     override val last = "}"
