@@ -3,7 +3,6 @@ package com.chbachman.cminus.representation.function
 import com.chbachman.cminus.representation.Scope
 import com.chbachman.cminus.representation.Type
 import com.chbachman.cminus.representation.Typed
-import com.chbachman.cminus.representation.value.Variable
 
 /**
  * Created by Chandler on 4/9/17.

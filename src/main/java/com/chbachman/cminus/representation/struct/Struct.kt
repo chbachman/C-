@@ -1,10 +1,12 @@
 package com.chbachman.cminus.representation.struct
 
 import com.chbachman.cminus.gen.CMinusParser
-import com.chbachman.cminus.representation.*
+import com.chbachman.cminus.representation.Scope
+import com.chbachman.cminus.representation.Type
+import com.chbachman.cminus.representation.Typed
+import com.chbachman.cminus.representation.VariableHolder
 import com.chbachman.cminus.representation.function.CodeBlock
-import com.chbachman.cminus.representation.function.FunctionHeader
-import com.chbachman.cminus.representation.function.Header
+import com.chbachman.cminus.representation.function.StructFunctionHeader
 import com.chbachman.cminus.representation.value.Variable
 
 /**
@@ -21,7 +23,7 @@ class Struct(val header: StructHeader, scope: Scope) : CodeBlock, Typed, Variabl
     val inits = header.inits.map { InitBlock(it, this, scope) }
 
     override fun getVariable(name: String): Variable? {
-        return variables.find { it.name == name }
+        return variables.find { it.name.first.text == name }
     }
 
     override val first = "struct $name {"
@@ -32,7 +34,7 @@ class Struct(val header: StructHeader, scope: Scope) : CodeBlock, Typed, Variabl
 
             for (v in variables) {
                 // Convert variable to one without a value.
-                vars.append(Variable(v.name, v.type).code())
+                vars.append(Variable(v.name, v.type).statement)
             }
 
             return vars.toString()
@@ -43,10 +45,12 @@ class Struct(val header: StructHeader, scope: Scope) : CodeBlock, Typed, Variabl
 
 class StructHeader(val ctx: CMinusParser.StructContext): Typed {
     val name: String = ctx.ID().text
-    val functions = ctx.classBlock().func().map { FunctionHeader(it) }
+    val functions = ctx.classBlock().func().map { StructFunctionHeader(it, this) }
     val inits = ctx.classBlock().initBlock().map { InitHeader(it, this) }
+    val variables = ctx.classBlock().variable().map { Variable(it, scope) }
+
     override val type: Type
-        get() = Type.from(this)
+        get() = Type[this]
 
     fun getStruct(scope: Scope): Struct {
         return Struct(this, scope)

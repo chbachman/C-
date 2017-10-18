@@ -6,11 +6,13 @@ import com.chbachman.cminus.representation.value.Variable
 
 /**
  * Created by Chandler on 5/22/17.
+ * Handles creation of Headers, or Functions without the insides.
+ * Allows for order to not matter, since the pre-declarations are made for you.
  */
 abstract class Header: Typed {
     abstract val baseName: String
     abstract val parameters: List<Variable>
-    open val overloaded = true
+    open val overloaded = false
 
     abstract fun getFunc(scope: Scope): FunctionType
 

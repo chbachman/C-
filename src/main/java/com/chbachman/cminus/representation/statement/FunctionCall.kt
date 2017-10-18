@@ -1,39 +1,25 @@
 package com.chbachman.cminus.representation.statement
 
 import com.chbachman.cminus.gen.CMinusParser
-import com.chbachman.cminus.representation.Parser
 import com.chbachman.cminus.representation.Scope
 import com.chbachman.cminus.representation.Type
 import com.chbachman.cminus.representation.function.Header
-import com.chbachman.cminus.representation.get
 import com.chbachman.cminus.representation.value.Expression
+import com.chbachman.cminus.representation.value.Identifier
 import com.chbachman.cminus.representation.value.Statement
+import com.chbachman.cminus.representation.get
 
 /**
  * Created by Chandler on 4/12/17.
  * Represents a function call.
  */
-open class FunctionCall(ctx: CMinusParser.FunctionCallContext, scope: Scope): Expression, Statement {
-    internal val name = ctx.ID().text
-    internal var parameters = Parser.parse(ctx.argumentList(), scope)
-    override val type: Type
-        get() = ref.type
 
-    // If we don't have a ref defined, then get one from name.
-    // Otherwise pull from the defined ref.
-    private var _ref: Header? = null
-    internal val ref: Header by lazy {
-        if (_ref != null) {
-            return@lazy _ref!!
-        }
+interface Call: Expression, Statement {
+    val ref: Header
+    val parameters: List<Expression>
+    val name: Identifier
 
-        scope.functions[name, parameters] ?: throw RuntimeException("Function $name was not found.")
-    }
-
-    protected constructor(ctx: CMinusParser.FunctionCallContext, scope: Scope, ref: Header) : this(ctx, scope) {
-        // Setup custom ref, instead of computed ref.
-        this._ref = ref
-
+    fun verify() {
         if (parameters.size != ref.parameters.size) {
             throw RuntimeException("Function $name does not have ${parameters.size} parameters.")
         }
@@ -44,6 +30,9 @@ open class FunctionCall(ctx: CMinusParser.FunctionCallContext, scope: Scope): Ex
             }
         }
     }
+
+    override val type: Type
+        get() = ref.type
 
     override val statement: String
         get() = expression + ';'
@@ -65,4 +54,17 @@ open class FunctionCall(ctx: CMinusParser.FunctionCallContext, scope: Scope): Ex
 
             return s.toString()
         }
+}
+
+class FunctionCall(ctx: CMinusParser.FunctionCallContext, scope: Scope): Call {
+    override val name = Identifier(ctx, scope)
+    override val parameters: List<Expression>
+    override val ref: Header
+
+    init {
+        val func = name.last as Identifier.FuncSegment
+        parameters = func.parameters
+        ref = func.ref
+        verify()
+    }
 }

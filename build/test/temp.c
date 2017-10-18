@@ -1,11 +1,22 @@
 #include <stdio.h>
 
-struct Animal initAnimal ();
+struct Animal {
+  char *name;
+  int age;
+};
 
-struct Animal initAnimal () {struct Animal createdAnimal;
-createdAnimal.name = "Cow";
-createdAnimal.age = 4;
-return createdAnimal;
+struct Animal initAnimal();
+
+struct Animal initAnimal() {
+  struct Animal createdAnimal;
+  createdAnimal.name = "Cow";
+  createdAnimal.age = 4;
+  return createdAnimal;
 }
 
-int main () {
+int main() {
+  struct Animal cow = initAnimal();
+  printf("%s\n", cow.name);
+  printf("%d\n", cow.age);
+  return 0;
+}

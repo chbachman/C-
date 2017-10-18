@@ -5,8 +5,9 @@ import com.chbachman.cminus.representation.Parser
 import com.chbachman.cminus.representation.Scope
 import com.chbachman.cminus.representation.Type
 import com.chbachman.cminus.representation.function.CodeBlockHolder
-import com.chbachman.cminus.representation.value.Statement
 import com.chbachman.cminus.representation.value.Expression
+import com.chbachman.cminus.representation.value.Identifier
+import com.chbachman.cminus.representation.value.Statement
 import com.chbachman.cminus.representation.value.Variable
 
 /**
@@ -32,7 +33,7 @@ class ForStatement(ctx: CMinusParser.ForStatementContext, scope: Scope) : CodeBl
             throw RuntimeException("For Loop without int range. ${range.text}")
         }
 
-        index = Variable(range.ID().text, Type.Native.INT.type)
+        index = Variable(Identifier(range.ID().text), Type.Native.INT.type)
 
         scope.pushScope(this)
         statements = Parser.parse(ctx.codeBlock(), scope)

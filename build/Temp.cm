@@ -1,13 +1,18 @@
 struct Animal {
     var name = "Cow";
-    var age = 4;
+    var age: Int;
 
-    init () {
+    init (age: Int) {
+      self.age = age;
+    }
 
+    func age() {
+      age = age + 1;
     }
 }
 
-var cow = Animal();
+var cow = Animal(age: 4);
 
-print(cow.name);
+print(cow.age);
+cow.age();
 print(cow.age);

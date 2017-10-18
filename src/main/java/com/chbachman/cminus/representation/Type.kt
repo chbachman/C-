@@ -1,22 +1,29 @@
 package com.chbachman.cminus.representation
 
 import com.chbachman.cminus.gen.CMinusParser
-import com.chbachman.cminus.representation.struct.Struct
 import com.chbachman.cminus.representation.struct.StructHeader
 
-class Type private constructor(val typeName: String, val cType: String = typeName) : Typed {
+class Type private constructor(
+        val typeName: String,
+        val cType: String = typeName,
+        val struct: StructHeader? = null
+) : Typed {
 
-    override val type = this
+    override val type: Type
+        get() = this
 
     fun code(): String {
         return cType
     }
 
     override fun equals(other: Any?): Boolean {
-        other ?: return false
         val otherType = other as? Type ?: return false
 
         return typeName == otherType.typeName
+    }
+
+    override fun hashCode(): Int {
+        return typeName.hashCode()
     }
 
     enum class Native constructor(val typeName: String, val cType: String = typeName): Typed {
@@ -31,16 +38,28 @@ class Type private constructor(val typeName: String, val cType: String = typeNam
     companion object {
         private val types = Native.values().map { Pair(it.type.typeName, it.type) }.toMap().toMutableMap()
 
-        fun from(context: CMinusParser.TypeContext): Type {
-            return getType(context.ID().text)
+        fun getStruct(index: String): StructHeader? {
+            return Type[Type[index] ?: return null]
         }
 
-        fun from(struct: StructHeader): Type {
-            return getType(struct.name, "struct " + struct.name)
+        operator fun get(index: String): Type? {
+            return types[index]
         }
 
-        private fun getType(name: String, cType: String = name): Type {
-            return types.getOrPut(name, { Type(name, cType) })
+        operator fun get(index: CMinusParser.TypeContext): Type {
+            return getType(index.text)
+        }
+
+        operator fun get(index: StructHeader): Type {
+            return getType(index.name, "struct " + index.name)
+        }
+
+        operator fun get(index: Type): StructHeader? {
+            return index.struct
+        }
+
+        private fun getType(name: String, cType: String = name, struct: StructHeader? = null): Type {
+            return types.getOrPut(name, { Type(name, cType, struct) })
         }
     }
 }

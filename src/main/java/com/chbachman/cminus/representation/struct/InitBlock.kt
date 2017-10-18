@@ -7,6 +7,7 @@ import com.chbachman.cminus.representation.function.FunctionType
 import com.chbachman.cminus.representation.function.Header
 import com.chbachman.cminus.representation.statement.Assignment
 import com.chbachman.cminus.representation.statement.Return
+import com.chbachman.cminus.representation.value.Identifier
 import com.chbachman.cminus.representation.value.Statement
 import com.chbachman.cminus.representation.value.Variable
 
@@ -20,27 +21,16 @@ class InitBlock(override val header: InitHeader, parent: Struct, scope: Scope) :
     init {
         scope.pushScope(this)
 
-        val statements: MutableList<Statement> = mutableListOf()
-
         // Create the temp variable to return.
-        val toInit = Variable("created${parent.name}", type)
+        val toInit = Variable(Identifier("created${parent.name}"), type)
         scope.setThis(toInit, parent)
-        statements.add(toInit)
 
-        // Add the declared variables if declared inline.
-        parent.variables.forEach {
-            if (it.value != null) {
-                statements.add(Assignment(toInit.name + "." + it.name, it.value))
-            }
-        }
-
-        // Create the rest of the code block.
-        statements.addAll(Parser.parse(header.ctx.codeBlock(), scope))
-
-        // Add the return value.
-        statements.add(Return(toInit))
-
-        this.statements = statements
+        this.statements = listOf<Statement>(toInit) +
+        parent.variables.mapNotNull {
+            Assignment(toInit.name + it.name, it)
+        } +
+        Parser.parse(header.ctx.codeBlock(), scope) +
+        listOf(Return(toInit))
 
         scope.popScope()
     }

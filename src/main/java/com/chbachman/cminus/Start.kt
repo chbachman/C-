@@ -5,7 +5,6 @@ import com.chbachman.cminus.gen.CMinusLexer
 import com.chbachman.cminus.gen.CMinusParser
 import com.chbachman.cminus.representation.Parser
 import com.chbachman.cminus.representation.Scope
-import com.chbachman.cminus.representation.function.Function
 import com.chbachman.cminus.representation.function.FunctionHeader
 import com.chbachman.cminus.representation.function.MainFunction
 import com.chbachman.cminus.representation.struct.StructHeader
@@ -73,11 +72,13 @@ class Start constructor(inputPath: String, outputPath: String, run: Boolean = tr
         // Every "Function Header" has to implement a conversion to a regular FunctionType
         // This allows pre-declaration of all the global functions.
         // Somewhere along the line, functions need to either get qualified with scope or name
-        val functions = ctx.func().map { FunctionHeader(it) } + structs.flatMap { it.inits }
+        val functions = ctx.func().map { FunctionHeader(it) } +
+                structs.flatMap { it.inits } +
+                structs.flatMap { it.functions }
 
         val scope = Scope(functions, structs)
 
-        scope.structs.values.forEach {
+        structs.forEach {
             out.println(it.getStruct(scope).statement)
         }
 
@@ -103,11 +104,14 @@ class Start constructor(inputPath: String, outputPath: String, run: Boolean = tr
         scope.pushScope(main)
 
         ctx.statement().map {
-            Parser.parse(it, scope)
-        }.forEach {
-            if (it is Variable) {
-                scope.addVariable(it)
+            val line = Parser.parse(it, scope)
+
+            if (line is Variable) {
+                scope.addVariable(line)
             }
+
+            line
+        }.forEach {
             out.println(it.statement)
         }
 

@@ -16,15 +16,11 @@ object Parser {
     @JvmStatic
     fun parse(ctx: CMinusParser.ValueContext, scope: Scope): Expression {
         // Regular, non struct variable.
-        if (ctx.ID() != null) {
-            val name = ctx.ID().text
-            val v = scope.getVariable(name)
+        if (ctx.identifier() != null) {
+            val id = Identifier(ctx.identifier(), scope)
+            val v = scope.getVariable(id)
 
-            v ?: throw RuntimeException("Invalid Variable: $name")
-
-            if (ctx.dot() != null) {
-                return parse(ctx.dot(), v, scope)
-            }
+            v ?: throw RuntimeException("Invalid Variable: $id")
 
             return v
         }
@@ -47,38 +43,6 @@ object Parser {
         }
 
         throw RuntimeException("Type of value isn't implemented. " + ctx.text)
-    }
-
-    @JvmStatic
-    fun parse(ctx: CMinusParser.DotContext, parent: Variable, scope: Scope): Expression {
-        if (ctx.functionCall() != null) {
-            return FunctionCall(ctx.functionCall(), scope)
-        }
-
-        // ITT: Lots of Optional Unwrapping.
-        if (ctx.ID() != null) {
-            val name = ctx.ID().text
-
-            parent.value ?: throw RuntimeException("Should never happen, but the struct variable doesn't have a value.")
-
-            val structCon = parent.value as? StructConstructor ?: throw RuntimeException("Should never happen, but the struct variable isn't a struct.")
-
-            val current = structCon.struct.getVariable(name) ?: throw RuntimeException("Struct ${parent.type} ${parent.name} does not contain the variable $name")
-
-            // Recursive dot parsing. If we have a dot, create the variable and move on.
-            if (ctx.dot() != null) {
-                val v = parse(ctx.dot(), current, scope)
-                return Variable("${parent.name}.${v.expression}", v)
-            }
-
-            if (current.value != null) {
-                return Variable("${parent.name}.${current.name}", current.value)
-            }
-
-            return Variable("${parent.name}.${current.name}", current.type)
-        }
-
-        throw RuntimeException("Type of dot expression isn't implemented. " + ctx.text)
     }
 
     @JvmStatic
@@ -117,10 +81,10 @@ object Parser {
     }
 
     @JvmStatic
-    fun parse(ctx: CMinusParser.FunctionCallContext, scope: Scope): FunctionCall {
-        val name = ctx.ID().text
-        val struct = scope.structs[name] != null
-        val func = scope.functions[name]?.isNotEmpty() ?: false
+    fun parse(ctx: CMinusParser.FunctionCallContext, scope: Scope): Call {
+        val name = Identifier(ctx, scope)
+        val struct = Type.getStruct(name.text) != null
+        val func = scope.functions[name.text]?.isNotEmpty() ?: false
 
         if (func && struct) {
             throw RuntimeException("There is both a struct and function named: $name")

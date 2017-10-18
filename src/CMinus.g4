@@ -30,18 +30,23 @@ statement:
     ( control
       );
 
-variable: (var='var' ID '=' value) | (var='var' ID ':' type) ;
-assignment: ID(dot)? '=' value ;
-functionCall: ID '(' argumentList? ')' ;
+variable: ('var' ID '=' value) | ('var' ID ':' type) ;
+assignment: identifier '=' value ;
+functionCall: ((segment) ('.'(segment))* '.')? funcSegment ;
 argumentList: argument (',' argument)* ;
 argument: ID':' value ;
 print: PRINT '(' value ')' ;
 ret: RETURN value ;
 
+identifier: (segment) ('.'(segment))* ;
+segment: idSegment | funcSegment ;
+idSegment: ID ;
+funcSegment: ID '(' argumentList? ')' ;
+
 value:
-    ID(dot)?
+    functionCall
+    | identifier
     | literal
-    | functionCall
     | assignment
     | paren='(' value ')'
     |<assoc=right> value op='^' value
@@ -51,11 +56,6 @@ value:
     | value op='-' value
     | value op='%' value
     | value op='==' value
-    ;
-
-dot:
-    '.'ID(dot)?
-    | functionCall
     ;
 
 

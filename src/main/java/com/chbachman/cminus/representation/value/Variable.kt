@@ -11,18 +11,16 @@ import com.chbachman.cminus.representation.Type
  * TODO: Break this up into assignment and new.
  */
 class Variable private constructor(
-        val name: String,
-        val value: Expression?,
-        override val type: Type,
-        val new: Boolean = true
+        val name: Identifier,
+        private val value: Expression?,
+        override val type: Type
 ) : Expression, Statement {
 
     constructor(ctx: CMinusParser.VariableContext, scope: Scope):
-            this(ctx.ID().text, makeValue(ctx, scope), makeType(ctx, scope), ctx.`var` != null) {
-        if (new) {
-            scope.addVariable(this)
-        }
-    }
+            this(Identifier(ctx.ID().text), makeValue(ctx, scope), makeType(ctx, scope))
+
+    constructor(ctx: CMinusParser.ParameterContext):
+            this(Identifier(ctx.ID().text), Type[ctx.type()])
 
     companion object {
         fun makeValue(ctx: CMinusParser.VariableContext, scope: Scope): Expression? {
@@ -30,7 +28,7 @@ class Variable private constructor(
         }
 
         fun makeType(ctx: CMinusParser.VariableContext, scope: Scope): Type {
-            val type = ctx.type()?.let { Type.from(it) }
+            val type = ctx.type()?.let { Type[it] }
             val value = makeValue(ctx, scope)
 
             return value?.type ?: (type ?: throw IllegalStateException("Variable has no type or value"))
@@ -38,28 +36,35 @@ class Variable private constructor(
     }
 
     // Two main constructors
-    constructor(name: String, value: Expression): this(name, value, value.type)
-    constructor(name: String, type: Type): this(name, null, type)
-
-    constructor(ctx: CMinusParser.ParameterContext): this(ctx.ID().text, Type.from(ctx.type()))
-    constructor(parent: Variable, child: Variable): this("${parent.name}.${child.name}", child.value, child.type)
+    // constructor(name: Identifier, value: Expression): this(name, value, value.type)
+    constructor(name: Identifier, type: Type): this(name, null, type)
 
     // The declaration of the variable.
     override val statement: String
         get() {
             if (value != null) {
-                var code = ""
-                // Add the Type to make it a new variable
-                if (new) {
-                    code = value.type.code() + " "
-                }
-
-                return code + name + " = " + value.expression + ";"
+                return "${type.code()} $name = ${value.expression};"
             } else {
-                return type.code() + " " + name + ";"
+                return "${type.code()} $name;"
             }
         }
 
+    private var init = value != null
+
+    fun init() {
+        init = true
+    }
+
+    val initalized: Boolean
+        get() = init
+
+
+    operator fun plus(other: Variable): Variable {
+        return Variable(name + other.name, other.value, other.type)
+    }
+
     // The use of the variable.
-    override val expression = name
+    override val expression = name.toString()
 }
+
+class ContainerVariable()
