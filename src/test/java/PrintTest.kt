@@ -1,7 +1,7 @@
 package test.java
 
 import com.chbachman.cminus.util.TestProgram
-import org.junit.jupiter.api.Test
+import org.junit.Test
 
 class PrintTest {
 

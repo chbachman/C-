@@ -1,18 +1,8 @@
-struct Animal {
-    var name = "Cow";
-    var age: Int;
+fun print(x: CString) {}
 
-    init (age: Int) {
-      self.age = age;
-    }
+fun print(x: Int) {}
 
-    func age() {
-      age = age + 1;
-    }
+fun main(argc: Int, argv: CArray<CString>): Int {
+	print("Hello, World!")
+	print(argc)
 }
-
-var cow = Animal(age: 4);
-
-print(cow.age);
-cow.age();
-print(cow.age);

@@ -1,11 +1,7 @@
 package com.chbachman.cminus.representation
 
-import com.chbachman.cminus.gen.CMinusParser
-import com.chbachman.cminus.representation.control.Control
-import com.chbachman.cminus.representation.control.ForStatement
-import com.chbachman.cminus.representation.control.IfStatement
-import com.chbachman.cminus.representation.statement.*
-import com.chbachman.cminus.representation.value.*
+import com.chbachman.cminus.gen.Kotlin
+import com.chbachman.cminus.representation.literal.StringLiteral
 
 /**
  * Created by Chandler on 5/17/17.
@@ -13,115 +9,153 @@ import com.chbachman.cminus.representation.value.*
  */
 object Parser {
 
-    @JvmStatic
-    fun parse(ctx: CMinusParser.ValueContext, scope: Scope): Expression {
-        // Regular, non struct variable.
-        if (ctx.identifier() != null) {
-            val id = Identifier(ctx.identifier(), scope)
-            val v = scope.getVariable(id)
-
-            v ?: throw RuntimeException("Invalid Variable: $id")
-
-            return v
+    fun parse(ctx: Kotlin.TopLevelObjectContext): TopLevel {
+        when {
+            ctx.functionDeclaration() != null -> return Func(ctx.functionDeclaration())
         }
 
-        if (ctx.literal() != null) {
-            return Literal(ctx.literal())
-        }
-
-        // Struct Initialization e.g. Struct() is handled with function call.
-        if (ctx.functionCall() != null) {
-            return parse(ctx.functionCall(), scope)
-        }
-
-        if (ctx.op != null) {
-            return Operation(ctx, scope)
-        }
-
-        if (ctx.paren != null) {
-            return Paren(ctx, scope)
-        }
-
-        throw RuntimeException("Type of value isn't implemented. " + ctx.text)
+        throw RuntimeException("The function type: " + ctx.text + " is not implemented yet.")
     }
 
-    @JvmStatic
-    fun parse(ctx: CMinusParser.StatementContext, scope: Scope): Statement {
-
-        if (ctx.print() != null) {
-            return Print(ctx.print(), scope)
-        }
-
-        if (ctx.variable() != null) {
-            return Variable(ctx.variable(), scope)
-        }
-
-        if (ctx.ret() != null) {
-            return Return(ctx.ret(), scope)
-        }
-
-        if (ctx.assignment() != null) {
-            return Assignment(ctx.assignment(), scope)
-        }
-
-        if (ctx.functionCall() != null) {
-            return parse(ctx.functionCall(), scope)
-        }
-
-        if (ctx.control() != null) {
-            return parse(ctx.control(), scope)
+    fun parse(ctx: Kotlin.StatementContext): Statement {
+        when {
+            ctx.expression() != null -> return parse(ctx.expression())
         }
 
         throw RuntimeException("The statement type: " + ctx.text + " is not implemented yet.")
     }
 
-    @JvmStatic
-    fun parse(ctx: CMinusParser.CodeBlockContext, scope: Scope): List<Statement> {
-        return ctx.statement().map { Parser.parse(it, scope) }
+    fun parse(ctx: Kotlin.BlockContext): CodeBlock {
+        return CodeBlock(ctx)
     }
 
-    @JvmStatic
-    fun parse(ctx: CMinusParser.FunctionCallContext, scope: Scope): Call {
-        val name = Identifier(ctx, scope)
-        val struct = Type.getStruct(name.text) != null
-        val func = scope.functions[name.text]?.isNotEmpty() ?: false
-
-        if (func && struct) {
-            throw RuntimeException("There is both a struct and function named: $name")
-        }
-
-        if (func) {
-            return FunctionCall(ctx, scope)
-        }
-
-        if (struct) {
-            return StructConstructor(ctx, scope)
-        }
-
-        throw RuntimeException("The function type: ${ctx.text} is not implemented yet.")
+    // MARK: Expression Parsing Fun! ʕ •ᴥ•ʔ
+    fun parse(ctx: Kotlin.ExpressionContext): Expression {
+        return parse(ctx.disjunction())
     }
 
-    @JvmStatic
-    fun parse(ctx: CMinusParser.ParameterListContext): List<Variable> {
-        return ctx.parameter().map { Variable(it) }
-    }
-
-    @JvmStatic
-    fun parse(ctx: CMinusParser.ArgumentListContext?, scope: Scope): List<Expression> {
-        return ctx?.argument()?.map { Parser.parse(it.value(), scope) } ?: emptyList()
-    }
-
-    @JvmStatic
-    fun parse(ctx: CMinusParser.ControlContext, scope: Scope): Control {
-        if (ctx.ifStatement() != null) {
-            return IfStatement(ctx.ifStatement(), scope)
+    fun parse(ctx: Kotlin.DisjunctionContext): Expression {
+        if (ctx.conjunction().size > 1) {
+            throw RuntimeException("The value type: " + ctx.text + " is not implemented yet.")
         }
 
-        if (ctx.forStatement() != null) {
-            return ForStatement(ctx.forStatement(), scope)
-        }
-
-        throw RuntimeException("Control Statement: " + ctx.text + " has not been implemented yet.")
+        return parse(ctx.conjunction().first())
     }
 
+    fun parse(ctx: Kotlin.ConjunctionContext): Expression {
+        if (ctx.equality().size > 1) {
+            throw RuntimeException("The value type: " + ctx.text + " is not implemented yet.")
+        }
+
+        return parse(ctx.equality().first())
+    }
+
+    fun parse(ctx: Kotlin.EqualityContext): Expression {
+        if (ctx.comparison().size > 1) {
+            throw RuntimeException("The value type: " + ctx.text + " is not implemented yet.")
+        }
+
+        return parse(ctx.comparison().first())
+    }
+
+    fun parse(ctx: Kotlin.ComparisonContext): Expression {
+        if (ctx.infixOperation().size > 1) {
+            throw RuntimeException("The value type: " + ctx.text + " is not implemented yet.")
+        }
+
+        return parse(ctx.infixOperation().first())
+    }
+
+    fun parse(ctx: Kotlin.InfixOperationContext): Expression {
+        if (ctx.elvisExpression().size > 1) {
+            throw RuntimeException("The value type: " + ctx.text + " is not implemented yet.")
+        }
+
+        return parse(ctx.elvisExpression().first())
+    }
+
+    fun parse(ctx: Kotlin.ElvisExpressionContext): Expression {
+        if (ctx.infixFunctionCall().size > 1) {
+            throw RuntimeException("The value type: " + ctx.text + " is not implemented yet.")
+        }
+
+        return parse(ctx.infixFunctionCall().first())
+    }
+
+    fun parse(ctx: Kotlin.InfixFunctionCallContext): Expression {
+        if (ctx.rangeExpression().size > 1) {
+            throw RuntimeException("The value type: " + ctx.text + " is not implemented yet.")
+        }
+
+        return parse(ctx.rangeExpression().first())
+    }
+
+    fun parse(ctx: Kotlin.RangeExpressionContext): Expression {
+        if (ctx.additiveExpression().size > 1) {
+            throw RuntimeException("The value type: " + ctx.text + " is not implemented yet.")
+        }
+
+        return parse(ctx.additiveExpression().first())
+    }
+
+    fun parse(ctx: Kotlin.AdditiveExpressionContext): Expression {
+        if (ctx.multiplicativeExpression().size > 1) {
+            throw RuntimeException("The value type: " + ctx.text + " is not implemented yet.")
+        }
+
+        return parse(ctx.multiplicativeExpression().first())
+    }
+
+    fun parse(ctx: Kotlin.MultiplicativeExpressionContext): Expression {
+        if (ctx.asExpression().size > 1) {
+            throw RuntimeException("The value type: " + ctx.text + " is not implemented yet.")
+        }
+
+        return parse(ctx.asExpression().first())
+    }
+
+    fun parse(ctx: Kotlin.AsExpressionContext): Expression {
+        if (ctx.asExpressionTail() != null) {
+            throw RuntimeException("The value type: " + ctx.text + " is not implemented yet.")
+        }
+
+        return parse(ctx.prefixUnaryExpression())
+    }
+
+    fun parse(ctx: Kotlin.PrefixUnaryExpressionContext): Expression {
+        if (ctx.prefixUnaryOperator().size > 1) {
+            throw RuntimeException("The value type: " + ctx.text + " is not implemented yet.")
+        }
+
+        if (ctx.annotations().size > 1) {
+            throw RuntimeException("The value type: " + ctx.text + " is not implemented yet.")
+        }
+
+        return parse(ctx.postfixUnaryExpression())
+    }
+
+    fun parse(ctx: Kotlin.PostfixUnaryExpressionContext): Expression {
+        return when {
+            ctx.callExpression() != null -> FunctionCall(ctx.callExpression())
+            ctx.assignableExpression() != null -> parse(ctx.assignableExpression())
+            else -> throw RuntimeException("The value type: " + ctx.text + " is not implemented yet.")
+        }
+    }
+
+    fun parse(ctx: Kotlin.AssignableExpressionContext): Expression {
+        return when {
+            ctx.primaryExpression() != null -> Parser.parse(ctx.primaryExpression())
+            else -> throw RuntimeException("The value type: " + ctx.text + " is not implemented yet.")
+        }
+    }
+
+    fun parse(ctx: Kotlin.PrimaryExpressionContext): Expression {
+        return when {
+            ctx.stringLiteral() != null -> StringLiteral(ctx.stringLiteral())
+            ctx.simpleIdentifier() != null -> VariableRef(ctx.simpleIdentifier())
+            else -> throw RuntimeException("The value type: " + ctx.text + " is not implemented yet.")
+        }
+    }
 }
+
+interface TopLevel

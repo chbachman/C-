@@ -1,14 +1,10 @@
 package com.chbachman.cminus
 
-import com.chbachman.cminus.gen.CMinusBaseListener
-import com.chbachman.cminus.gen.CMinusLexer
-import com.chbachman.cminus.gen.CMinusParser
+import com.chbachman.cminus.gen.Kotlin
+import com.chbachman.cminus.gen.KotlinBaseListener
+import com.chbachman.cminus.gen.KotlinLexer
+import com.chbachman.cminus.representation.FuncHeader
 import com.chbachman.cminus.representation.Parser
-import com.chbachman.cminus.representation.Scope
-import com.chbachman.cminus.representation.function.FunctionHeader
-import com.chbachman.cminus.representation.function.MainFunction
-import com.chbachman.cminus.representation.struct.StructHeader
-import com.chbachman.cminus.representation.value.Variable
 import com.chbachman.cminus.util.Run
 import org.antlr.v4.runtime.CharStream
 import org.antlr.v4.runtime.CharStreams
@@ -37,7 +33,7 @@ class Start constructor(inputPath: String, outputPath: String, run: Boolean = tr
     private val out = PrintStream(output)
 
     init {
-        val tree = parser.init()
+        val tree = parser.kotlinFile()
         val walker = ParseTreeWalker()
 
         // TODO: Make this more general
@@ -49,7 +45,7 @@ class Start constructor(inputPath: String, outputPath: String, run: Boolean = tr
         // So we do a dry run to init everything before accessing it ourselves.
         walker.walk(NOOP(), tree)
 
-        init(tree.statements())
+        init(tree)
 
         // Why bother trying to format it ourselves, when we can just have clang do it for us.
         Run.command("clang-format -i " + output.canonicalPath)
@@ -59,66 +55,30 @@ class Start constructor(inputPath: String, outputPath: String, run: Boolean = tr
         }
     }
 
-    internal fun generateTree(input: CharStream): CMinusParser {
-        val lexer = CMinusLexer(input)
+    private fun generateTree(input: CharStream): Kotlin {
+        val lexer = KotlinLexer(input)
         val tokens = CommonTokenStream(lexer)
-        val parser = CMinusParser(tokens)
+        val parser = Kotlin(tokens)
         return parser
     }
 
-    fun init(ctx: CMinusParser.StatementsContext) {
-        val structs = ctx.struct().map { StructHeader(it) }
+    fun init(ctx: Kotlin.KotlinFileContext) {
 
-        // Every "Function Header" has to implement a conversion to a regular FunctionType
-        // This allows pre-declaration of all the global functions.
-        // Somewhere along the line, functions need to either get qualified with scope or name
-        val functions = ctx.func().map { FunctionHeader(it) } +
-                structs.flatMap { it.inits } +
-                structs.flatMap { it.functions }
-
-        val scope = Scope(functions, structs)
-
-        structs.forEach {
-            out.println(it.getStruct(scope).statement)
-        }
-
-        // Get all function headers, and print them all out.
-        scope.functions.flatMap {
-            it.value
+        ctx.topLevelObject().mapNotNull {
+            it.functionDeclaration()
         }.forEach {
-            out.println(it.header)
-        }
-
-        out.println()
-
-        // Get all regular functions, and print those out too.
-        scope.functions.flatMap {
-            it.value.map { it.getFunc(scope) }
-        }.forEach {
-            out.println(it.statement)
+            ScopeStack.addFunc(FuncHeader(it))
         }
 
         // Handle Main Function
-        val main = MainFunction()
-        out.println(main.first)
-        scope.pushScope(main)
-
-        ctx.statement().map {
-            val line = Parser.parse(it, scope)
-
-            if (line is Variable) {
-                scope.addVariable(line)
-            }
-
-            line
+        ctx.topLevelObject().map {
+            Parser.parse(it)
         }.forEach {
-            out.println(it.statement)
+            out.println(it)
         }
-
-        out.println(scope.popScope().last)
     }
 
-    class NOOP : CMinusBaseListener()
+    class NOOP : KotlinBaseListener()
 }
 
 
