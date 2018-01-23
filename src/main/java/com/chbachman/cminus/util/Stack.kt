@@ -5,7 +5,11 @@ package com.chbachman.cminus.util
  * Adds Stack Methods to Collections
  */
 
-fun <T> MutableList<T>.pop(): T? {
+fun <T> MutableList<T>.pop(): T {
+    return this.removeAt(0)
+}
+
+fun <T> MutableList<T>.popOrNull(): T? {
     if (this.isEmpty()) {
         return null
     }
@@ -13,7 +17,11 @@ fun <T> MutableList<T>.pop(): T? {
     return this.removeAt(0)
 }
 
-fun <T> List<T>.peek(): T? {
+fun <T> List<T>.peek(): T {
+    return this[0]
+}
+
+fun <T> List<T>.peekOrNull(): T? {
     if (this.isEmpty()) {
         return null
     }

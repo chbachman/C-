@@ -1,7 +1,7 @@
 package com.chbachman.cminus.representation
 
 import com.chbachman.cminus.gen.Kotlin
-import com.chbachman.cminus.representation.literal.StringLiteral
+import com.chbachman.cminus.representation.literal.*
 
 /**
  * Created by Chandler on 5/17/17.
@@ -11,7 +11,7 @@ object Parser {
 
     fun parse(ctx: Kotlin.TopLevelObjectContext): TopLevel {
         when {
-            ctx.functionDeclaration() != null -> return Func(ctx.functionDeclaration())
+            ctx.functionDeclaration() != null -> return DeclaredFunc(ctx.functionDeclaration())
         }
 
         throw RuntimeException("The function type: " + ctx.text + " is not implemented yet.")
@@ -100,7 +100,7 @@ object Parser {
 
     fun parse(ctx: Kotlin.AdditiveExpressionContext): Expression {
         if (ctx.multiplicativeExpression().size > 1) {
-            throw RuntimeException("The value type: " + ctx.text + " is not implemented yet.")
+            return Addition(ctx)
         }
 
         return parse(ctx.multiplicativeExpression().first())
@@ -108,7 +108,7 @@ object Parser {
 
     fun parse(ctx: Kotlin.MultiplicativeExpressionContext): Expression {
         if (ctx.asExpression().size > 1) {
-            throw RuntimeException("The value type: " + ctx.text + " is not implemented yet.")
+            return Multiplication(ctx)
         }
 
         return parse(ctx.asExpression().first())
@@ -153,6 +153,21 @@ object Parser {
         return when {
             ctx.stringLiteral() != null -> StringLiteral(ctx.stringLiteral())
             ctx.simpleIdentifier() != null -> VariableRef(ctx.simpleIdentifier())
+            ctx.literalConstant() != null -> parse(ctx.literalConstant())
+            else -> throw RuntimeException("The value type: " + ctx.text + " is not implemented yet.")
+        }
+    }
+
+    fun parse(ctx: Kotlin.LiteralConstantContext): Expression {
+        return when {
+            ctx.BinLiteral() != null -> BinLiteral(ctx.BinLiteral())
+            ctx.IntegerLiteral() != null -> IntegerLiteral(ctx.IntegerLiteral())
+            ctx.HexLiteral() != null -> HexLiteral(ctx.HexLiteral())
+            ctx.BooleanLiteral() != null -> BooleanLiteral(ctx.BooleanLiteral())
+            ctx.CharacterLiteral() != null -> CharLiteral(ctx.CharacterLiteral())
+            ctx.RealLiteral() != null -> RealLiteral.parse(ctx.RealLiteral())
+            ctx.NullLiteral() != null -> NullLiteral(ctx.NullLiteral())
+            ctx.LongLiteral() != null -> LongLiteral(ctx.LongLiteral())
             else -> throw RuntimeException("The value type: " + ctx.text + " is not implemented yet.")
         }
     }

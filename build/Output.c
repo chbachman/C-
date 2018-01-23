@@ -1,8 +1,4 @@
 #include <stdio.h>
 
-void print(char *x) {}
-void print$Int(int x) {}
-int main(int argc, char **argv) {
-  print("Hello, World!");
-  print$Int(argc);
-}
+void print(int x) {}
+int main(int argc, char **argv) { print(2 * 2 + 3 / 65); }

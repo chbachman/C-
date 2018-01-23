@@ -18,7 +18,7 @@ class FuncHeader(ctx: Kotlin.FunctionDeclarationContext) {
             )
         }
 
-        val other = ScopeStack.getFunc(name, parameters.map { it.type })
+        val other = ScopeStack.getFunc(name, parameters.map { it.type }).firstOrNull()
 
         if (other != null) {
             fullName = other.fullName
@@ -33,7 +33,7 @@ class FuncHeader(ctx: Kotlin.FunctionDeclarationContext) {
             }
 
             returnType = if (ctx.returnType != null) {
-                Type[ctx.returnType.text] ?: Type.Native.VOID.type
+                Type[ctx.returnType] ?: Type.Native.VOID.type
             } else {
                 Type.Native.VOID.type
             }
@@ -53,11 +53,17 @@ class FuncHeader(ctx: Kotlin.FunctionDeclarationContext) {
     }
 }
 
-class Func(ctx: Kotlin.FunctionDeclarationContext): TopLevel {
-    private val header = FuncHeader(ctx)
-    val name = header.name
-    val parameters = header.parameters
-    val returnType = header.returnType
+interface Func: TopLevel {
+    val name: String
+    val parameters: List<Parameter>
+    val returnType: Type
+}
+
+class DeclaredFunc(ctx: Kotlin.FunctionDeclarationContext): Func {
+    val header = FuncHeader(ctx)
+    override val name = header.name
+    override val parameters = header.parameters
+    override val returnType = header.returnType
     val block: CodeBlock
 
     init {

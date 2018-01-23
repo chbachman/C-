@@ -1,8 +1,5 @@
-fun print(x: CString) {}
-
-fun print(x: Int) {}
+fun print(x: Int?) {}
 
 fun main(argc: Int, argv: CArray<CString>): Int {
-	print("Hello, World!")
-	print(argc)
+	print(2 * 2 + 3 / 65)
 }
