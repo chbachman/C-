@@ -18,11 +18,16 @@ class Start constructor(inputPath: String, outputPath: String, run: Boolean = tr
     // Main Method, all it does is init Type and create Start.
     companion object {
         @JvmStatic fun main(args: Array<String>) {
+            var run = false
             if (args.size < 2) {
                 throw RuntimeException("Need input and output files.")
             }
 
-            Start(args[0], args[1], true)
+            if (args.size >= 3) {
+                run = args[3] == "--run"
+            }
+
+            Start(args[0], args[1], run)
         }
     }
 

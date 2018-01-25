@@ -2,7 +2,6 @@ package com.chbachman.cminus.representation
 
 import com.chbachman.cminus.gen.Kotlin
 
-// TODO: Fix Division/Subtraction/Modulo
 class Addition(ctx: Kotlin.AdditiveExpressionContext): Expression {
     val members = ctx.multiplicativeExpression().map { Parser.parse(it) }
     val operands = ctx.additiveOperator().map { it.text }

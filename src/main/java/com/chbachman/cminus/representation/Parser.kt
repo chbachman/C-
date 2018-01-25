@@ -11,10 +11,22 @@ object Parser {
 
     fun parse(ctx: Kotlin.TopLevelObjectContext): TopLevel {
         when {
-            ctx.functionDeclaration() != null -> return DeclaredFunc(ctx.functionDeclaration())
+            ctx.functionDeclaration() != null -> {
+                val func = ctx.functionDeclaration()
+
+                if (func.modifierList() != null) {
+                    if (func.modifierList().modifier().any {
+                        it.functionModifier()?.EXTERNAL() != null
+                    }) {
+                        return NativeFunc(ctx.functionDeclaration())
+                    }
+                }
+
+                return DeclaredFunc(ctx.functionDeclaration())
+            }
         }
 
-        throw RuntimeException("The function type: " + ctx.text + " is not implemented yet.")
+        TODO("The function type: " + ctx.text + " is not implemented yet.")
     }
 
     fun parse(ctx: Kotlin.StatementContext): Statement {
@@ -22,7 +34,7 @@ object Parser {
             ctx.expression() != null -> return parse(ctx.expression())
         }
 
-        throw RuntimeException("The statement type: " + ctx.text + " is not implemented yet.")
+        TODO("The statement type: " + ctx.text + " is not implemented yet.")
     }
 
     fun parse(ctx: Kotlin.BlockContext): CodeBlock {
@@ -36,7 +48,7 @@ object Parser {
 
     fun parse(ctx: Kotlin.DisjunctionContext): Expression {
         if (ctx.conjunction().size > 1) {
-            throw RuntimeException("The value type: " + ctx.text + " is not implemented yet.")
+            TODO("The value type: " + ctx.text + " is not implemented yet.")
         }
 
         return parse(ctx.conjunction().first())
@@ -44,7 +56,7 @@ object Parser {
 
     fun parse(ctx: Kotlin.ConjunctionContext): Expression {
         if (ctx.equality().size > 1) {
-            throw RuntimeException("The value type: " + ctx.text + " is not implemented yet.")
+            TODO("The value type: " + ctx.text + " is not implemented yet.")
         }
 
         return parse(ctx.equality().first())
@@ -52,7 +64,7 @@ object Parser {
 
     fun parse(ctx: Kotlin.EqualityContext): Expression {
         if (ctx.comparison().size > 1) {
-            throw RuntimeException("The value type: " + ctx.text + " is not implemented yet.")
+            TODO("The value type: " + ctx.text + " is not implemented yet.")
         }
 
         return parse(ctx.comparison().first())
@@ -60,7 +72,7 @@ object Parser {
 
     fun parse(ctx: Kotlin.ComparisonContext): Expression {
         if (ctx.infixOperation().size > 1) {
-            throw RuntimeException("The value type: " + ctx.text + " is not implemented yet.")
+            TODO("The value type: " + ctx.text + " is not implemented yet.")
         }
 
         return parse(ctx.infixOperation().first())
@@ -68,7 +80,7 @@ object Parser {
 
     fun parse(ctx: Kotlin.InfixOperationContext): Expression {
         if (ctx.elvisExpression().size > 1) {
-            throw RuntimeException("The value type: " + ctx.text + " is not implemented yet.")
+            TODO("The value type: " + ctx.text + " is not implemented yet.")
         }
 
         return parse(ctx.elvisExpression().first())
@@ -76,7 +88,7 @@ object Parser {
 
     fun parse(ctx: Kotlin.ElvisExpressionContext): Expression {
         if (ctx.infixFunctionCall().size > 1) {
-            throw RuntimeException("The value type: " + ctx.text + " is not implemented yet.")
+            TODO("The value type: " + ctx.text + " is not implemented yet.")
         }
 
         return parse(ctx.infixFunctionCall().first())
@@ -84,7 +96,7 @@ object Parser {
 
     fun parse(ctx: Kotlin.InfixFunctionCallContext): Expression {
         if (ctx.rangeExpression().size > 1) {
-            throw RuntimeException("The value type: " + ctx.text + " is not implemented yet.")
+            TODO("The value type: " + ctx.text + " is not implemented yet.")
         }
 
         return parse(ctx.rangeExpression().first())
@@ -92,13 +104,14 @@ object Parser {
 
     fun parse(ctx: Kotlin.RangeExpressionContext): Expression {
         if (ctx.additiveExpression().size > 1) {
-            throw RuntimeException("The value type: " + ctx.text + " is not implemented yet.")
+            TODO("The value type: " + ctx.text + " is not implemented yet.")
         }
 
         return parse(ctx.additiveExpression().first())
     }
 
     fun parse(ctx: Kotlin.AdditiveExpressionContext): Expression {
+        // If we only have one, there isn't any multiplication to do.
         if (ctx.multiplicativeExpression().size > 1) {
             return Addition(ctx)
         }
@@ -107,6 +120,7 @@ object Parser {
     }
 
     fun parse(ctx: Kotlin.MultiplicativeExpressionContext): Expression {
+        // If we only have one, there isn't any multiplication to do.
         if (ctx.asExpression().size > 1) {
             return Multiplication(ctx)
         }
@@ -116,7 +130,7 @@ object Parser {
 
     fun parse(ctx: Kotlin.AsExpressionContext): Expression {
         if (ctx.asExpressionTail() != null) {
-            throw RuntimeException("The value type: " + ctx.text + " is not implemented yet.")
+            TODO("The value type: " + ctx.text + " is not implemented yet.")
         }
 
         return parse(ctx.prefixUnaryExpression())
@@ -124,11 +138,11 @@ object Parser {
 
     fun parse(ctx: Kotlin.PrefixUnaryExpressionContext): Expression {
         if (ctx.prefixUnaryOperator().size > 1) {
-            throw RuntimeException("The value type: " + ctx.text + " is not implemented yet.")
+            TODO("The value type: " + ctx.text + " is not implemented yet.")
         }
 
         if (ctx.annotations().size > 1) {
-            throw RuntimeException("The value type: " + ctx.text + " is not implemented yet.")
+            TODO("The value type: " + ctx.text + " is not implemented yet.")
         }
 
         return parse(ctx.postfixUnaryExpression())
@@ -136,16 +150,16 @@ object Parser {
 
     fun parse(ctx: Kotlin.PostfixUnaryExpressionContext): Expression {
         return when {
-            ctx.callExpression() != null -> FunctionCall(ctx.callExpression())
+            ctx.callExpression() != null -> FunctionCall.parse(ctx.callExpression())
             ctx.assignableExpression() != null -> parse(ctx.assignableExpression())
-            else -> throw RuntimeException("The value type: " + ctx.text + " is not implemented yet.")
+            else -> TODO("The value type: " + ctx.text + " is not implemented yet.")
         }
     }
 
     fun parse(ctx: Kotlin.AssignableExpressionContext): Expression {
         return when {
             ctx.primaryExpression() != null -> Parser.parse(ctx.primaryExpression())
-            else -> throw RuntimeException("The value type: " + ctx.text + " is not implemented yet.")
+            else -> TODO("The value type: " + ctx.text + " is not implemented yet.")
         }
     }
 
@@ -154,7 +168,7 @@ object Parser {
             ctx.stringLiteral() != null -> StringLiteral(ctx.stringLiteral())
             ctx.simpleIdentifier() != null -> VariableRef(ctx.simpleIdentifier())
             ctx.literalConstant() != null -> parse(ctx.literalConstant())
-            else -> throw RuntimeException("The value type: " + ctx.text + " is not implemented yet.")
+            else -> TODO("The value type: " + ctx.text + " is not implemented yet.")
         }
     }
 
@@ -168,7 +182,7 @@ object Parser {
             ctx.RealLiteral() != null -> RealLiteral.parse(ctx.RealLiteral())
             ctx.NullLiteral() != null -> NullLiteral(ctx.NullLiteral())
             ctx.LongLiteral() != null -> LongLiteral(ctx.LongLiteral())
-            else -> throw RuntimeException("The value type: " + ctx.text + " is not implemented yet.")
+            else -> TODO("The value type: " + ctx.text + " is not implemented yet.")
         }
     }
 }

@@ -59,6 +59,17 @@ interface Func: TopLevel {
     val returnType: Type
 }
 
+class NativeFunc(ctx: Kotlin.FunctionDeclarationContext): Func {
+    val header = FuncHeader(ctx)
+    override val name = header.name
+    override val parameters = header.parameters
+    override val returnType = header.returnType
+
+    override fun toString(): String {
+        return ""
+    }
+}
+
 class DeclaredFunc(ctx: Kotlin.FunctionDeclarationContext): Func {
     val header = FuncHeader(ctx)
     override val name = header.name

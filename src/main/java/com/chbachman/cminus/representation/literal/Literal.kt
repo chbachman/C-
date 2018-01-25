@@ -55,7 +55,7 @@ class CharLiteral(ctx: TerminalNode): Expression {
 
 object RealLiteral {
     fun parse(ctx: TerminalNode): Expression {
-        throw RuntimeException("The value type: " + ctx.text + " is not implemented yet.")
+        TODO("The value type: " + ctx.text + " is not implemented yet.")
     }
 }
 
