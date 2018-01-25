@@ -30,11 +30,18 @@ object Parser {
     }
 
     fun parse(ctx: Kotlin.StatementContext): Statement {
-        when {
-            ctx.expression() != null -> return parse(ctx.expression())
+        return when {
+            ctx.expression() != null -> parse(ctx.expression())
+            ctx.declaration() != null -> parse(ctx.declaration())
+            else -> TODO("The statement type: " + ctx.text + " is not implemented yet.")
         }
+    }
 
-        TODO("The statement type: " + ctx.text + " is not implemented yet.")
+    fun parse(ctx: Kotlin.DeclarationContext): Statement {
+        return when {
+            ctx.propertyDeclaration() != null -> Property(ctx.propertyDeclaration())
+            else -> TODO("The statement type: " + ctx.text + " is not implemented yet.")
+        }
     }
 
     fun parse(ctx: Kotlin.BlockContext): CodeBlock {

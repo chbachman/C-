@@ -1,5 +1,7 @@
 fun main(argc: Int, argv: CArray<CString>): Int {
-	print(565)
+	var temp = argc + 654
+
+	print(temp)
 	print("Hello, World!")
 	println(argc)
 }
