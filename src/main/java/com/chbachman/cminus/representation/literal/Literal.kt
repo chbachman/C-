@@ -5,7 +5,7 @@ import com.chbachman.cminus.representation.Type
 import org.antlr.v4.runtime.tree.TerminalNode
 
 class BooleanLiteral(ctx: TerminalNode): Expression {
-    override val type = Type.Native.BOOL.type
+    override val type = Type.Native.Boolean
     val value = ctx.text == "true"
 
     override fun toString(): String {
@@ -14,7 +14,7 @@ class BooleanLiteral(ctx: TerminalNode): Expression {
 }
 
 class IntegerLiteral(ctx: TerminalNode): Expression {
-    override val type = Type.Native.INT.type
+    override val type = Type.Native.Int
     val value = ctx.text.toInt()
 
     override fun toString(): String {
@@ -23,7 +23,7 @@ class IntegerLiteral(ctx: TerminalNode): Expression {
 }
 
 class HexLiteral(ctx: TerminalNode): Expression {
-    override val type = Type.Native.INT.type
+    override val type = Type.Native.Int
     val value = ctx.text
         .removePrefix("0x")
         .toInt(16)
@@ -34,7 +34,7 @@ class HexLiteral(ctx: TerminalNode): Expression {
 }
 
 class BinLiteral(ctx: TerminalNode): Expression {
-    override val type = Type.Native.INT.type
+    override val type = Type.Native.Int
     val value = ctx.text
         .removePrefix("0b")
         .toInt(2)
@@ -45,7 +45,7 @@ class BinLiteral(ctx: TerminalNode): Expression {
 }
 
 class CharLiteral(ctx: TerminalNode): Expression {
-    override val type = Type.Native.CHAR.type
+    override val type = Type.Native.Char
     val value = ctx.text[1]
 
     override fun toString(): String {
@@ -60,15 +60,15 @@ object RealLiteral {
 }
 
 class DoubleLiteral(ctx: TerminalNode): Expression {
-    override val type = Type.Native.DOUBLE.type
+    override val type = Type.Native.Double
 }
 
 class FloatLiteral(ctx: TerminalNode): Expression {
-    override val type = Type.Native.FLOAT.type
+    override val type = Type.Native.Float
 }
 
 class NullLiteral(ctx: TerminalNode): Expression {
-    override val type = Type.Native.NULL.type
+    override val type = Type.Native.Unit
 
     override fun toString(): String {
         return "NULL"
@@ -76,5 +76,5 @@ class NullLiteral(ctx: TerminalNode): Expression {
 }
 
 class LongLiteral(ctx: TerminalNode): Expression {
-    override val type = Type.Native.LONG.type
+    override val type = Type.Native.Long
 }

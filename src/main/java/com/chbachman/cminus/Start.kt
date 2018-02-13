@@ -3,8 +3,10 @@ package com.chbachman.cminus
 import com.chbachman.cminus.gen.Kotlin
 import com.chbachman.cminus.gen.KotlinBaseListener
 import com.chbachman.cminus.gen.KotlinLexer
-import com.chbachman.cminus.representation.FuncHeader
 import com.chbachman.cminus.representation.Parser
+import com.chbachman.cminus.representation.Type
+import com.chbachman.cminus.representation.function.ContextFuncHeader
+import com.chbachman.cminus.representation.struct.ClassDeclaration
 import com.chbachman.cminus.util.Run
 import org.antlr.v4.runtime.CharStream
 import org.antlr.v4.runtime.CharStreams
@@ -44,6 +46,7 @@ class Start constructor(inputPath: String, outputPath: String, run: Boolean = tr
         // TODO: Make this more general
         // Pass 0: Add external runtime libraries.
         out.println("#include <stdio.h>")
+        out.println("#include <stdlib.h>")
         out.println()
 
         // Something the walker does creates the tree.
@@ -68,19 +71,26 @@ class Start constructor(inputPath: String, outputPath: String, run: Boolean = tr
     }
 
     fun init(ctx: Kotlin.KotlinFileContext) {
+        // Find Types Declared
+        ctx.topLevelObject()
+            .mapNotNull { it.classDeclaration() }
+            .forEach {
+                Type += ClassDeclaration.getType(it)
+            }
 
-        ctx.topLevelObject().mapNotNull {
-            it.functionDeclaration()
-        }.forEach {
-            ScopeStack.addFunc(FuncHeader(it))
-        }
+        // Find Global Functions
+        ctx.topLevelObject()
+            .mapNotNull { it.functionDeclaration() }
+            .forEach {
+                NameTable += ContextFuncHeader(it)
+            }
 
         // Handle Main Function
-        ctx.topLevelObject().map {
-            Parser.parse(it)
-        }.forEach {
-            out.println(it)
-        }
+        ctx.topLevelObject()
+            .map { Parser.parse(it) }
+            .forEach {
+                out.println(it)
+            }
     }
 
     class NOOP : KotlinBaseListener()

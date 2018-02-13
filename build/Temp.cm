@@ -1,7 +1,19 @@
-fun main(argc: Int, argv: CArray<CString>): Int {
-	var temp = argc + 654
+external fun strlen(str: CString): Int
+external fun malloc(str: CString): Int
 
-	print(temp)
-	print("Hello, World!")
-	println(argc)
+class String {
+	val buffer = 56
+	var length = 24
+
+	init {
+		length = 45
+	}
+
+	fun append(s: String) {
+
+	}
+}
+
+fun main(): Int {
+	val temp = String()
 }

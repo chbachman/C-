@@ -32,3 +32,7 @@ fun <T> List<T>.peekOrNull(): T? {
 fun <T> MutableList<T>.push(element: T) {
     return this.add(0, element)
 }
+
+fun <T> List<T>.toPlainString(): String {
+    return this.joinToString("") { it.toString() }
+}

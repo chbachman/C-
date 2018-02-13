@@ -5,7 +5,7 @@ import com.chbachman.cminus.gen.Kotlin
 class Addition(ctx: Kotlin.AdditiveExpressionContext): Expression {
     val members = ctx.multiplicativeExpression().map { Parser.parse(it) }
     val operands = ctx.additiveOperator().map { it.text }
-    override val type = Type.Native.INT.type
+    override val type = Type.Native.Int
 
     override fun toString(): String {
         var i = 0
@@ -18,7 +18,7 @@ class Addition(ctx: Kotlin.AdditiveExpressionContext): Expression {
 class Multiplication(ctx: Kotlin.MultiplicativeExpressionContext): Expression {
     val members = ctx.asExpression().map { Parser.parse(it) }
     val operands = ctx.multiplicativeOperator().map { it.text }
-    override val type = Type.Native.INT.type
+    override val type = Type.Native.Int
 
     override fun toString(): String {
         var i = 0

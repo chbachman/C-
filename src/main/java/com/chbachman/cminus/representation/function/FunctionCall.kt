@@ -1,7 +1,12 @@
-package com.chbachman.cminus.representation
+package com.chbachman.cminus.representation.function
 
-import com.chbachman.cminus.ScopeStack
+import com.chbachman.cminus.NameTable
 import com.chbachman.cminus.gen.Kotlin
+import com.chbachman.cminus.representation.Expression
+import com.chbachman.cminus.representation.Parser
+import com.chbachman.cminus.representation.Type
+import com.chbachman.cminus.representation.Typed
+import com.chbachman.cminus.representation.struct.ConstructorCall
 
 abstract class FunctionCall(ctx: Kotlin.CallExpressionContext): Expression {
     val name = getName(ctx)
@@ -12,9 +17,7 @@ abstract class FunctionCall(ctx: Kotlin.CallExpressionContext): Expression {
         .map { Parser.parse(it.expression()) }
 
     protected fun parameterList(): String {
-        return parameters.map { "$it" }.reduce { e1, e2 ->
-            "$e1, $e2"
-        }
+        return parameters.joinToString { "$it" }
     }
 
     override fun toString(): String {
@@ -22,10 +25,15 @@ abstract class FunctionCall(ctx: Kotlin.CallExpressionContext): Expression {
     }
 
     companion object {
+        // Decide what the function call is and get the proper call.
         fun parse(ctx: Kotlin.CallExpressionContext): FunctionCall {
+            val name = getName(ctx)
+            val possibleType = Type[getName(ctx)]
+
             return when {
-                getName(ctx) == "print" -> PrintCall(ctx, false)
-                getName(ctx) == "println" -> PrintCall(ctx, true)
+                name == "print" -> PrintCall(ctx, false)
+                name == "println" -> PrintCall(ctx, true)
+                possibleType != null -> ConstructorCall(possibleType, ctx)
                 else -> NormalCall(ctx)
             }
         }
@@ -41,7 +49,7 @@ private class NormalCall(ctx: Kotlin.CallExpressionContext): FunctionCall(ctx) {
     override val fullName: String
 
     init {
-        val possibleFunctions = ScopeStack.getFunc(name, parameters.map { it.type })
+        val possibleFunctions = NameTable.getFunc(name, parameters.map { it.type })
 
         if (possibleFunctions.isEmpty()) {
             throw RuntimeException("Function $name(${parameterList()}) does not exist.")
@@ -62,11 +70,11 @@ private class NormalCall(ctx: Kotlin.CallExpressionContext): FunctionCall(ctx) {
 
 private class PrintCall(ctx: Kotlin.CallExpressionContext, val newline: Boolean): FunctionCall(ctx) {
     override val fullName = "printf"
-    override val type = Type.Native.VOID.type
+    override val type = Type.Native.Unit
 
     override fun toString(): String {
         val newline = if (newline) "\\n" else ""
-        val formatString = "\"" + formatString(parameters.first()) + newline + "\""
+        val formatString = "\"" + parameters.joinToString { formatString(it) } + newline + "\""
 
         return "$fullName($formatString, ${parameterList()})"
     }
@@ -75,10 +83,10 @@ private class PrintCall(ctx: Kotlin.CallExpressionContext, val newline: Boolean)
         val type = typed.type
 
         return when (type) {
-            Type.Native.CHAR.type -> "%c"
-            Type.Native.INT.type -> "%d"
-            Type.Native.CSTRING.type -> "%s"
-            Type.Native.FLOAT.type -> "%f"
+            Type.Native.Char -> "%c"
+            Type.Native.Int -> "%d"
+            Type.Native.CString -> "%s"
+            Type.Native.Float -> "%f"
             else -> TODO("Waiting for toString implementation here")
         }
     }

@@ -2,7 +2,7 @@ package com.chbachman.cminus.representation
 
 import com.chbachman.cminus.gen.Kotlin
 
-data class Type private constructor(
+data class Type constructor(
     val typeName: String,
     private val cType: String = typeName,
     private val reference: Int = 0,
@@ -22,7 +22,7 @@ data class Type private constructor(
 
     fun canConvert(other: Type): Boolean {
         // Null can be passed into every other nullable type.
-        if (this == Native.NULL.type) {
+        if (this == Native.Unit) {
             return other.nullable
         }
 
@@ -33,7 +33,7 @@ data class Type private constructor(
 
         // TODO: For right now, only types with same reference amount can be converted.
         if (other.reference != this.reference) {
-            return false;
+            return false
         }
 
         if (nullable) {
@@ -47,8 +47,22 @@ data class Type private constructor(
         return cType + "".padStart(reference, '*')
     }
 
+    private fun pair(): Pair<String, Type> {
+        return Pair(typeName, this)
+    }
+
     companion object {
-        private val baseTypes = Native.values().map { Pair(it.type.typeName, it.type) }.toMap().toMutableMap()
+        private val baseTypes = mutableMapOf(
+            Type("CString", "char", 1).pair(),
+            Type("Char", "char").pair(),
+            Type("Int", "int").pair(),
+            Type("Long", "long").pair(),
+            Type("Float", "float").pair(),
+            Type("Double", "double").pair(),
+            Type("Unit", "void").pair(),
+            Type("Boolean", "int").pair(),
+            Type("null", "NULL").pair()
+        )
 
         operator fun get(ctx: Kotlin.TypeContext): Type? {
             // TODO: Allow dot notation
@@ -79,23 +93,25 @@ data class Type private constructor(
                 finalType
             }
         }
+
+        operator fun get(str: String): Type? {
+             return baseTypes[str]
+        }
+
+        operator fun plusAssign(type: Type) {
+            baseTypes[type.typeName] = type
+        }
     }
 
-    enum class Native constructor(
-        val typeName: String,
-        val cType: String = typeName,
-        private val reference: Int = 0
-    ): Typed {
-        CSTRING("CString", "char", 1),
-        CHAR("Char", "char"),
-        INT("Int", "int"),
-        LONG("Long", "long int"),
-        FLOAT("Float", "float"),
-        DOUBLE("Double", "double"),
-        VOID("Unit", "void"),
-        BOOL("Boolean", "int"),
-        NULL("null", "NULL");
-
-        override val type by lazy { Type(typeName, cType, reference) }
+    object Native {
+        val CString = baseTypes["CString"]!!
+        val Char = baseTypes["Char"]!!
+        val Int = baseTypes["Int"]!!
+        val Long = baseTypes["Long"]!!
+        val Float = baseTypes["Float"]!!
+        val Double = baseTypes["Double"]!!
+        val Unit = baseTypes["Unit"]!!
+        val Boolean = baseTypes["Boolean"]!!
+        val Null = baseTypes["null"]!!
     }
 }
