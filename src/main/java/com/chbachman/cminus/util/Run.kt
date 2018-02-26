@@ -2,6 +2,7 @@ package com.chbachman.cminus.util
 
 import com.chbachman.cminus.Start
 import java.io.BufferedReader
+import java.io.File
 import java.io.InputStreamReader
 
 /**
@@ -11,41 +12,46 @@ import java.io.InputStreamReader
  */
 object Run {
 
-    fun buildCM(inputFile: String, outputFile: String) {
-        Start(inputFile, outputFile, false)
+    fun buildCM(inputFile: File, outputFile: File) {
+        Start(inputFile.canonicalPath, outputFile.canonicalPath, false)
     }
 
-    fun build(inputFile: String, outputFile: String): String {
+    fun build(inputFile: File, outputFile: File): Output {
         return command("clang $inputFile -o $outputFile")
     }
 
-    fun run(inputFile: String): String {
-        return command(inputFile)
+    fun run(inputFile: File): Output {
+        return command(inputFile.canonicalPath)
     }
 
-    fun buildAndRun(inputFile: String, tempFile: String) {
+    fun buildAndRun(inputFile: File, tempFile: File) {
         build(inputFile, tempFile)
         run(tempFile)
     }
 
     fun series(commands: Array<String>) {
         for (command in commands) {
-            _command(command).waitFor()
+            _command(command).join()
         }
     }
 
-    fun command(command: String): String {
-        val builder = StringBuilder()
+    fun command(command: String): Output {
+        val output = StringBuilder()
+        val err = StringBuilder()
 
-        _command(command, builder).waitFor()
+        _command(command, output, err).join()
 
-        return builder.toString()
+        return Output(output.toString(), err.toString())
     }
 
-    private fun _command(command: String, output: Appendable = System.out, error: Appendable = System.err): Process {
+    private fun _command(
+        command: String,
+        output: Appendable = System.out,
+        error: Appendable = System.err
+    ): Thread {
         val pr = Runtime.getRuntime().exec(command)
 
-        Thread {
+        val thread = Thread {
             pr.waitFor()
 
             val input = BufferedReader(InputStreamReader(pr.inputStream))
@@ -65,8 +71,15 @@ object Run {
                 error.append('\n')
                 line = err.readLine()
             }
-        }.start()
+        }
 
-        return pr
+        thread.start()
+
+        return thread
     }
 }
+
+data class Output(
+    val out: String,
+    val err: String
+)

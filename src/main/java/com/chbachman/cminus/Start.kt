@@ -59,7 +59,7 @@ class Start constructor(inputPath: String, outputPath: String, run: Boolean = tr
         Run.command("clang-format -i " + output.canonicalPath)
 
         if (run) {
-            Run.buildAndRun(output.canonicalPath, "./build/temp")
+            Run.buildAndRun(output, File("./build/temp"))
         }
     }
 

@@ -16,4 +16,6 @@ fun main(): Int {
 	val temp2 = String()
 
 	temp.append(temp2)
+
+	print(temp.length)
 }

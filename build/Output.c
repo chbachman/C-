@@ -25,4 +25,5 @@ int main() {
   String temp = String꞉꞉init();
   String temp2 = String꞉꞉init();
   temp->append(temp, temp2);
+  printf("%d", temp->length);
 }

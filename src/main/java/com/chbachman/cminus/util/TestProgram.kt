@@ -1,28 +1,36 @@
 package com.chbachman.cminus.util
 
-import org.junit.Assert.assertEquals
+import org.testng.Assert.assertEquals
 import java.io.File
 
 internal object TestProgram {
-
-    private val testDir = File("./build/test/")
-    private val tempFile = File(testDir, "temp.c")
-    private val tempFile2 = File(testDir, "temp2")
-
     private val testFileDir = File("./src/test/cm")
 
     private fun test(program: File) {
-        val cminus = program.canonicalPath
-        val cFile = tempFile.canonicalPath
-        val compiledFile = tempFile2.canonicalPath
+        val tempDir = createTempDir()
+        tempDir.deleteOnExit()
 
-        Run.buildCM(cminus, cFile)
-        Run.build(cFile, compiledFile)
+        val cFile = File(tempDir, "temp.c")
+        val executable = File(tempDir, "temp")
+        val kotlinScript = File(tempDir, "temp.kts")
 
-        val c = Run.run(compiledFile)
-        val swift = Run.command("swift " + cminus)
+        Run.buildCM(program, cFile)
+        Run.build(cFile, executable)
 
-        assertEquals(c, swift)
+        val c = Run.run(executable)
+
+        program.copyTo(kotlinScript, true)
+        kotlinScript.appendText("\nmain()")
+
+        val kotlin = Run.command("kotlinc -script ${kotlinScript.canonicalPath}")
+
+        println("C Minus Output:")
+        println(c.out)
+
+        println("Kotlin Output:")
+        println(kotlin.out)
+
+        assertEquals(c, kotlin)
     }
 
     fun test(path: String) {

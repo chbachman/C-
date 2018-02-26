@@ -1,33 +1,9 @@
-package test.java
-
 import com.chbachman.cminus.util.TestProgram
-import org.junit.Test
+import org.testng.annotations.Test
 
 class PrintTest {
-
     @Test
-    fun printHello() {
-        TestProgram.test("Print.cm")
+    fun printTypes() {
+        TestProgram.test("print/Print.kt")
     }
-
-    @Test
-    fun variableDeclaration() {
-        TestProgram.test("Variable.cm")
-    }
-
-    @Test
-    fun forLoopPrint() {
-        TestProgram.test("ForLoop.cm")
-    }
-
-    @Test
-    fun structPrint() {
-        TestProgram.test("StructPrint.cm")
-    }
-
-    @Test
-    fun parenPrint() {
-        TestProgram.test("Parenthesis.cm")
-    }
-
 }
