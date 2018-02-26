@@ -1,9 +1,8 @@
 package com.chbachman.cminus.representation.function
 
-import com.chbachman.cminus.NameTable
+import com.chbachman.cminus.SymbolTable
 import com.chbachman.cminus.gen.Kotlin
 import com.chbachman.cminus.representation.Type
-import com.chbachman.cminus.static.Constants
 
 abstract class FuncHeader {
     abstract val name: String
@@ -16,7 +15,7 @@ abstract class FuncHeader {
     }
 }
 
-class ContextFuncHeader(ctx: Kotlin.FunctionDeclarationContext, enclosing: Type? = null): FuncHeader() {
+class ContextFuncHeader(ctx: Kotlin.FunctionDeclarationContext): FuncHeader() {
     override val name: String
     override val fullName: String
     override val parameters: List<Parameter>
@@ -25,12 +24,7 @@ class ContextFuncHeader(ctx: Kotlin.FunctionDeclarationContext, enclosing: Type?
     init {
         val shortName = ctx.identifier().simpleIdentifier().first().Identifier().text
 
-        name = if (enclosing != null) {
-            // Not using regular colons since C doesn't support them in variable names. C does support U+A789 though.
-            "$enclosing${Constants.NAMESPACE_REPRESENTATION}$shortName"
-        } else {
-            shortName
-        }
+        name = shortName
 
         parameters = ctx.functionValueParameters().functionValueParameter().map {
             val parameter = it.parameter()
@@ -41,7 +35,7 @@ class ContextFuncHeader(ctx: Kotlin.FunctionDeclarationContext, enclosing: Type?
             )
         }
 
-        val other = NameTable.getFunc(name, parameters.map { it.type }).firstOrNull()
+        val other = SymbolTable[name, parameters.map { it.type }].firstOrNull()
 
         if (other != null) {
             fullName = other.fullName
@@ -49,7 +43,7 @@ class ContextFuncHeader(ctx: Kotlin.FunctionDeclarationContext, enclosing: Type?
         } else {
             // C doesn't support method overloading, so to add it we try a simple name and if it doesn't work
             // Then we move to a complicated name with $
-            fullName = if (NameTable.hasFuncWithName(name)) {
+            fullName = if (SymbolTable.hasFuncWithName(name)) {
                 name + "$" + parameters.joinToString("$") { it.type.typeName }
             } else {
                 name

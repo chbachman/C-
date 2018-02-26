@@ -1,6 +1,6 @@
 package com.chbachman.cminus.representation.function
 
-import com.chbachman.cminus.NameTable
+import com.chbachman.cminus.SymbolTable
 import com.chbachman.cminus.gen.Kotlin
 import com.chbachman.cminus.representation.Expression
 import com.chbachman.cminus.representation.Parser
@@ -11,7 +11,7 @@ import com.chbachman.cminus.representation.struct.ConstructorCall
 abstract class FunctionCall(ctx: Kotlin.CallExpressionContext): Expression {
     val name = getName(ctx)
     abstract val fullName: String
-    val parameters = ctx
+    open val parameters = ctx
         .valueArguments()
         .valueArgument()
         .map { Parser.parse(it.expression()) }
@@ -26,6 +26,10 @@ abstract class FunctionCall(ctx: Kotlin.CallExpressionContext): Expression {
 
     companion object {
         // Decide what the function call is and get the proper call.
+        fun parse(parent: Expression, ctx: Kotlin.CallExpressionContext): FunctionCall {
+            return ClassCall(parent, ctx)
+        }
+
         fun parse(ctx: Kotlin.CallExpressionContext): FunctionCall {
             val name = getName(ctx)
             val possibleType = Type[getName(ctx)]
@@ -44,12 +48,40 @@ abstract class FunctionCall(ctx: Kotlin.CallExpressionContext): Expression {
     }
 }
 
+private class ClassCall(val parent: Expression, ctx: Kotlin.CallExpressionContext): FunctionCall(ctx) {
+    override val fullName: String
+    override val type: Type
+    override val parameters: List<Expression>
+
+    init {
+        val table = SymbolTable[parent.type]!!
+        val parameters = listOf(parent.type) + super.parameters.map { it.type }
+        val possibleFunctions = table[name, parameters]
+
+        if (possibleFunctions.isEmpty()) {
+            throw RuntimeException("Function $name(${parameterList()}) does not exist.")
+        }
+
+        if (possibleFunctions.size != 1) {
+            throw RuntimeException(
+                "Function $name(${parameterList()}) has multiple valid overloads: $possibleFunctions"
+            )
+        }
+
+        val function = possibleFunctions.first()
+
+        fullName = function.name
+        type = function.returnType
+        this.parameters = listOf(parent) + super.parameters
+    }
+}
+
 private class NormalCall(ctx: Kotlin.CallExpressionContext): FunctionCall(ctx) {
     override val type: Type
     override val fullName: String
 
     init {
-        val possibleFunctions = NameTable.getFunc(name, parameters.map { it.type })
+        val possibleFunctions = SymbolTable[name, parameters.map { it.type }]
 
         if (possibleFunctions.isEmpty()) {
             throw RuntimeException("Function $name(${parameterList()}) does not exist.")

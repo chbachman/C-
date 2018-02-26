@@ -1,6 +1,6 @@
 package com.chbachman.cminus.representation.function
 
-import com.chbachman.cminus.NameTable
+import com.chbachman.cminus.SymbolTable
 import com.chbachman.cminus.gen.Kotlin
 import com.chbachman.cminus.representation.CodeBlock
 import com.chbachman.cminus.representation.Parser
@@ -28,15 +28,15 @@ class NativeFunc(ctx: Kotlin.FunctionDeclarationContext): Func() {
     }
 }
 
-class DeclaredFunc(ctx: Kotlin.FunctionDeclarationContext, enclosing: Type? = null): Func() {
-    override val header = ContextFuncHeader(ctx, enclosing)
+class DeclaredFunc(ctx: Kotlin.FunctionDeclarationContext): Func() {
+    override val header = ContextFuncHeader(ctx)
     val block: CodeBlock
 
     init {
-        NameTable.push()
-        parameters.forEach { NameTable.addVariable(it.name, it.type) }
+        SymbolTable.push()
+        parameters.forEach { SymbolTable.addVariable(it.name, it.type) }
         block = Parser.parse(ctx.functionBody().block())
-        NameTable.pop()
+        SymbolTable.pop()
     }
 
     override fun toString(): String {

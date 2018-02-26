@@ -1,19 +1,19 @@
-external fun strlen(str: CString): Int
-external fun malloc(str: CString): Int
-
 class String {
-	val buffer = 56
+	val buffer: Int
 	var length = 24
 
 	init {
-		length = 45
+		buffer = length
 	}
 
 	fun append(s: String) {
-
+		length = length + s.length
 	}
 }
 
 fun main(): Int {
 	val temp = String()
+	val temp2 = String()
+
+	temp.append(temp2)
 }

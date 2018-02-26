@@ -1,6 +1,6 @@
 package com.chbachman.cminus.representation.control
 
-import com.chbachman.cminus.NameTable
+import com.chbachman.cminus.SymbolTable
 import com.chbachman.cminus.gen.Kotlin
 import com.chbachman.cminus.representation.CodeBlock
 import com.chbachman.cminus.representation.Expression
@@ -12,9 +12,9 @@ class IfExpression(ctx: Kotlin.IfExpressionContext, exp: Boolean): Expression {
     override val semicolon = false
 
     init {
-        NameTable.push()
+        SymbolTable.push()
         codeBlock = Parser.parse(ctx.controlStructureBody().first().block())
-        NameTable.pop()
+        SymbolTable.pop()
     }
 
     override val type =

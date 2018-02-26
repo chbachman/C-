@@ -75,14 +75,16 @@ class Start constructor(inputPath: String, outputPath: String, run: Boolean = tr
         ctx.topLevelObject()
             .mapNotNull { it.classDeclaration() }
             .forEach {
-                Type += ClassDeclaration.getType(it)
+                val type = ClassDeclaration.getType(it)
+                Type += type
+                SymbolTable[type] = ClassDeclaration.getNS(it)
             }
 
         // Find Global Functions
         ctx.topLevelObject()
             .mapNotNull { it.functionDeclaration() }
             .forEach {
-                NameTable += ContextFuncHeader(it)
+                SymbolTable += ContextFuncHeader(it)
             }
 
         // Handle Main Function
