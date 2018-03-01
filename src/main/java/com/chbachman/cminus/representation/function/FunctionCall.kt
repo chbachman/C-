@@ -111,6 +111,8 @@ private class PrintCall(ctx: Kotlin.CallExpressionContext, val newline: Boolean)
         val parameterList = parameters.joinToString { param ->
             if (param.type == Type.Native.Boolean) {
                 "$param ? \"true\" : \"false\""
+            } else if(param.type == Type.Native.Unit) {
+                "\"null\""
             } else {
                 param.toString()
             }
@@ -128,6 +130,7 @@ private class PrintCall(ctx: Kotlin.CallExpressionContext, val newline: Boolean)
             Type.Native.CString -> "%s"
             Type.Native.Float -> "%f"
             Type.Native.Boolean -> "%s"
+            Type.Native.Unit -> "%s"
             else -> TODO("Waiting for toString implementation here")
         }
     }

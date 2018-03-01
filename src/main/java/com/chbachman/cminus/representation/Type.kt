@@ -61,7 +61,8 @@ data class Type constructor(
             Type("Double", "double").pair(),
             Type("Unit", "void").pair(),
             Type("Boolean", "int").pair(),
-            Type("null", "NULL").pair()
+            Type("null", "NULL").pair(),
+            Type("CArray", "int*").pair()
         )
 
         operator fun get(ctx: Kotlin.TypeContext): Type? {

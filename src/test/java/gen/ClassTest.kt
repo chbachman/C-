@@ -6,6 +6,10 @@ class ClassTest {
        TestProgram.test("class/Basic.cm")
    }
    @Test
+   fun thisClass() {
+       TestProgram.test("class/ThisClass.cm")
+   }
+   @Test
    fun methods() {
        TestProgram.test("class/Methods.cm")
    }

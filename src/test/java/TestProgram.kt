@@ -1,3 +1,4 @@
+import com.chbachman.cminus.util.Output
 import com.chbachman.cminus.util.Run
 import org.testng.Assert.assertEquals
 import org.testng.Assert.fail
@@ -7,7 +8,7 @@ import java.io.IOException
 internal object TestProgram {
     private val testFileDir = File("./src/test/cm")
 
-    private fun test(program: File) {
+    private fun test(program: File, outputTest: String? = null) {
         val tempDir = createTempDir()
         tempDir.deleteOnExit()
 
@@ -23,20 +24,26 @@ internal object TestProgram {
 
             val c = Run.run(executable)
 
-            program.copyTo(kotlinScript, true)
-            kotlinScript.appendText("\nmain()")
+            // If we were not given any output to check against, check it against kotlin itself.
+            val programOutput =
+                if (outputTest == null) {
+                    program.copyTo(kotlinScript, true)
+                    kotlinScript.appendText("\nmain()")
 
-            val kotlin = Run.command("kotlinc -nowarn -script ${kotlinScript.canonicalPath}")
+                    Run.command("kotlinc -nowarn -script ${kotlinScript.canonicalPath}")
+                } else {
+                    Output(outputTest, "")
+                }
 
-            if (c != kotlin) {
+            if (c != programOutput) {
                 println("C Minus Output:")
                 println(c.out)
 
                 println("Kotlin Output:")
-                println(kotlin.out)
+                println(programOutput.out)
             }
 
-            assertEquals(c, kotlin)
+            assertEquals(c, programOutput)
         } catch (err: IOException) {
             val files = tempDir.listFiles().toList()
             print(files)
@@ -48,6 +55,17 @@ internal object TestProgram {
             }
 
             throw err
+        }
+    }
+
+    fun testSimple(program: String, output: String) {
+        val temp = createTempFile()
+        temp.writeText(program)
+
+        try {
+            test(temp, output)
+        } catch (err: IOException) {
+            fail("Could not recover from:", err)
         }
     }
 

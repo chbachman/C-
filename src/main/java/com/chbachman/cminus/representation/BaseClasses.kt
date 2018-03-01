@@ -14,3 +14,11 @@ interface Statement {
         return CodeBlock(listOf(this) + other.block)
     }
 }
+
+interface CustomTypeHeader {
+
+}
+
+interface CustomType {
+
+}

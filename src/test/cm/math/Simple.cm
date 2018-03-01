@@ -1,0 +1,7 @@
+fun main() {
+    val x = 2 * 2
+
+    val y = x / 2
+
+    print(x + y)
+}

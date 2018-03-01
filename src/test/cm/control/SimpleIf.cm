@@ -1,0 +1,17 @@
+fun main() {
+    if (true) {
+        print("true is true")
+    }
+
+    if (false) {
+        print("false is true")
+    }
+
+    val x = 4 - 4
+
+    if (x == 0) {
+        print("x is 0")
+    } else {
+        print("x is not 0")
+    }
+}
