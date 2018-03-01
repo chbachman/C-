@@ -16,7 +16,7 @@ class ClassConstructor(
     val fullName: String
 ) : Func() {
     override val header = CustomFuncHeader(
-        "String${Constants.NAMESPACE_REPRESENTATION}init",
+        "$type${Constants.NAMESPACE_REPRESENTATION}init",
         emptyList(),
         type
     )

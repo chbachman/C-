@@ -1,0 +1,20 @@
+class Foo {
+    val x = 4;
+    val y = 2;
+
+    fun bar() {
+        print(x)
+        print(y)
+    }
+
+    fun bar2(): Int {
+        return x + y
+    }
+}
+
+fun main() {
+    val foo = Foo()
+
+    foo.bar()
+    println(foo.bar2())
+}

@@ -17,7 +17,7 @@ abstract class FunctionCall(ctx: Kotlin.CallExpressionContext): Expression {
         .map { Parser.parse(it.expression()) }
 
     protected fun parameterList(): String {
-        return parameters.joinToString { "$it" }
+        return parameters.joinToString { it.toString() }
     }
 
     override fun toString(): String {
@@ -108,7 +108,15 @@ private class PrintCall(ctx: Kotlin.CallExpressionContext, val newline: Boolean)
         val newline = if (newline) "\\n" else ""
         val formatString = "\"" + parameters.joinToString { formatString(it) } + newline + "\""
 
-        return "$fullName($formatString, ${parameterList()})"
+        val parameterList = parameters.joinToString { param ->
+            if (param.type == Type.Native.Boolean) {
+                "$param ? \"true\" : \"false\""
+            } else {
+                param.toString()
+            }
+        }
+
+        return "$fullName($formatString, $parameterList)"
     }
 
     fun formatString(typed: Typed): String {
@@ -119,6 +127,7 @@ private class PrintCall(ctx: Kotlin.CallExpressionContext, val newline: Boolean)
             Type.Native.Int -> "%d"
             Type.Native.CString -> "%s"
             Type.Native.Float -> "%f"
+            Type.Native.Boolean -> "%s"
             else -> TODO("Waiting for toString implementation here")
         }
     }

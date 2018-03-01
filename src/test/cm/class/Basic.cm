@@ -1,0 +1,11 @@
+class Foo {
+    val x = 43
+    val y = true
+}
+
+fun main() {
+    val foo = Foo()
+
+    print(foo.x)
+    print(foo.y)
+}

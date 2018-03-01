@@ -1,0 +1,17 @@
+class Foo {
+    val x = 4
+    val y = 2
+    val xy: Int
+
+    init {
+        xy = x + y
+    }
+}
+
+fun main() {
+    val foo = Foo()
+
+    print(foo.x)
+    print(foo.y)
+    print(foo.xy)
+}

@@ -1,0 +1,24 @@
+package function
+
+fun foo(): Int {
+    return 1
+}
+
+fun foo(x: Int): Int {
+    return 2
+}
+
+fun foo(x: Boolean): Int {
+    return 3
+}
+
+fun foo(x: Int, y: Boolean): Int {
+    return 4
+}
+
+fun main() {
+    print(foo()) // 1
+    print(foo(2)) // 2
+    print(foo(true)) // 3
+    print(foo(3, true)) // 4
+}
