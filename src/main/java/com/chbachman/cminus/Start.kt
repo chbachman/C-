@@ -6,7 +6,7 @@ import com.chbachman.cminus.gen.KotlinLexer
 import com.chbachman.cminus.representation.Parser
 import com.chbachman.cminus.representation.Type
 import com.chbachman.cminus.representation.function.ContextFuncHeader
-import com.chbachman.cminus.representation.struct.ClassDeclaration
+import com.chbachman.cminus.representation.struct.ClassHeader
 import com.chbachman.cminus.util.Run
 import org.antlr.v4.runtime.CharStream
 import org.antlr.v4.runtime.CharStreams
@@ -75,9 +75,9 @@ class Start constructor(inputPath: String, outputPath: String, run: Boolean = tr
         ctx.topLevelObject()
             .mapNotNull { it.classDeclaration() }
             .forEach {
-                val type = ClassDeclaration.getType(it)
-                Type += type
-                SymbolTable[type] = ClassDeclaration.getNS(it)
+                val header = ClassHeader(it)
+                Type += header.type
+                SymbolTable[header.type] = header.getNS()
             }
 
         // Find Global Functions

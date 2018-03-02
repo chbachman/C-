@@ -18,6 +18,11 @@ abstract class Func: TopLevel {
 
     val returnType: Type
         get() = header.returnType
+
+    val pointer: String
+        get() {
+            return "$returnType (*$name)(${parameters.joinToString()})"
+        }
 }
 
 class NativeFunc(ctx: Kotlin.FunctionDeclarationContext): Func() {

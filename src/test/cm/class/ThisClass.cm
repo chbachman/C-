@@ -15,7 +15,7 @@ class Foo {
 fun main() {
     val foo = Foo()
 
-    val x = foo.bar().bar()
+    val x = foo.bar()
 
     x.bar()
 }

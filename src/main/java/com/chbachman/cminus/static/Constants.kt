@@ -5,4 +5,3 @@ object Constants {
     const val COLON_REPLACEMENT = "꞉"
     const val NAMESPACE_REPRESENTATION = COLON_REPLACEMENT + COLON_REPLACEMENT
 }
-

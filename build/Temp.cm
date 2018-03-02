@@ -5,25 +5,3 @@ fun main(): Int {
 	print(temp[0])
 }
 */
-
-class Foo {
-    val x = 3
-    val y: Int;
-
-    init {
-        y = x + 3
-    }
-
-    fun bar(): Foo {
-        print(x + y)
-        return this
-    }
-}
-
-fun main() {
-    val foo = Foo()
-
-    val x = foo.bar().bar()
-
-    x.bar()
-}

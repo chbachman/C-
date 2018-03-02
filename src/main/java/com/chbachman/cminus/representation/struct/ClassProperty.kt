@@ -20,7 +20,7 @@ class ClassProperty(ctx: Kotlin.PropertyDeclarationContext, val parent: Type): V
         initalized = expression != null
     }
 
-    fun getType(e: Kotlin.ExpressionContext?, t: Kotlin.TypeContext?): Pair<Type, Expression?> {
+    private fun getType(e: Kotlin.ExpressionContext?, t: Kotlin.TypeContext?): Pair<Type, Expression?> {
         val exp = if (e != null) { Parser.parse(e) } else { null }
         val type = if (t != null) { Type[t] } else { null }
 

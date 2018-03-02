@@ -1,0 +1,9 @@
+fun main() {
+    val x = 5
+    var y = 2
+
+    y = x
+
+    print(x)
+    print(y)
+}
