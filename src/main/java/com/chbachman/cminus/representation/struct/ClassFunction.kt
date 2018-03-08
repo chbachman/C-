@@ -4,13 +4,13 @@ import com.chbachman.cminus.SymbolTable
 import com.chbachman.cminus.Variable
 import com.chbachman.cminus.gen.Kotlin
 import com.chbachman.cminus.representation.*
-import com.chbachman.cminus.representation.function.ContextFuncHeader
-import com.chbachman.cminus.representation.function.Func
-import com.chbachman.cminus.representation.function.FuncHeader
+import com.chbachman.cminus.representation.function.DeclaredFunctionHeader
+import com.chbachman.cminus.representation.function.Function
+import com.chbachman.cminus.representation.function.Header
 import com.chbachman.cminus.representation.function.Parameter
 import com.chbachman.cminus.static.Constants
 
-class ClassFunctionHeader(ctx: Kotlin.FunctionDeclarationContext, enclosing: Type): FuncHeader() {
+class ClassFunctionHeader(val ctx: Kotlin.FunctionDeclarationContext, val enclosing: Type): Header<ClassFunction>() {
     override val name: String
     override val fullName: String
     override val parameters: List<Parameter>
@@ -18,7 +18,7 @@ class ClassFunctionHeader(ctx: Kotlin.FunctionDeclarationContext, enclosing: Typ
 
     init {
         // Just to conveniently get most of the details.
-        val tempHeader = ContextFuncHeader(ctx)
+        val tempHeader = DeclaredFunctionHeader(ctx)
         val implicitThis = Parameter(enclosing, "this")
 
         // Setup Qualified Name and FullName
@@ -35,6 +35,10 @@ class ClassFunctionHeader(ctx: Kotlin.FunctionDeclarationContext, enclosing: Typ
         return Init(thisVar)
     }
 
+    override fun parse(): ClassFunction {
+        return ClassFunction(ctx, enclosing)
+    }
+
     private inner class Init(val thisVar: String): Statement {
         override fun toString(): String {
             return "$thisVar->$name = &$fullName"
@@ -43,9 +47,9 @@ class ClassFunctionHeader(ctx: Kotlin.FunctionDeclarationContext, enclosing: Typ
 
 }
 
-class ClassFunction(ctx: Kotlin.FunctionDeclarationContext, enclosing: Type): Func() {
+class ClassFunction(ctx: Kotlin.FunctionDeclarationContext, enclosing: Type): Function() {
     override val header = ClassFunctionHeader(ctx, enclosing)
-    val block: CodeBlock
+    override val block: CodeBlock
 
     val classVar = "this"
 

@@ -10,6 +10,8 @@ class CodeBlock(val block: List<Statement>) {
 
     constructor(ctx: Kotlin.BlockContext): this(parseContext(ctx))
 
+    constructor(): this(emptyList())
+
     companion object {
         private fun parseContext(ctx: Kotlin.BlockContext): List<Statement> {
             val statements = mutableListOf<Statement>()

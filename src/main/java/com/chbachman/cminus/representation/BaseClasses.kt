@@ -2,14 +2,14 @@ package com.chbachman.cminus.representation
 
 import com.chbachman.cminus.Namespace
 import com.chbachman.cminus.Variable
-import com.chbachman.cminus.representation.function.Func
-import com.chbachman.cminus.representation.function.FuncHeader
+import com.chbachman.cminus.representation.function.Function
+import com.chbachman.cminus.representation.function.FunctionHeader
 
 interface Typed {
     val type: Type
 }
 
-interface Expression: Typed, Statement {}
+interface Expression: Typed, Statement
 
 interface Statement {
     val semicolon: Boolean
@@ -30,10 +30,12 @@ data class CustomStatement(
 }
 
 abstract class CustomTypeHeader {
-    // Full name is the non-typedef'd type name, which isn't a pointer.
+    // Full name is the non-typedef'd type name
+    // Isn't generally a pointer.
     abstract val fullName: String
 
-    // Name is the typedef'd name, which is a pointer.
+    // Name is the typedef'd name
+    // Should generally be a pointer
     abstract val name: String
 
     // The Type for the typedef'd name, which should be used instead of the fullName.
@@ -42,10 +44,15 @@ abstract class CustomTypeHeader {
     }
 
     // The methods attached to the name.
-    abstract val methods: List<FuncHeader>
+    abstract val methods: List<FunctionHeader>
     abstract val properties: List<Variable>
 
-    abstract fun getNS(): Namespace
+    open fun getNS(): Namespace {
+        val ns = Namespace()
+        ns += methods
+        properties.forEach { ns += it }
+        return ns
+    }
 }
 
 interface CustomType {
@@ -60,7 +67,7 @@ interface CustomType {
     val type: Type
         get() = header.type
 
-    val methods: List<Func>
+    val methods: List<Function>
 
     val typedef: String
         get() {

@@ -5,7 +5,7 @@ import com.chbachman.cminus.gen.KotlinBaseListener
 import com.chbachman.cminus.gen.KotlinLexer
 import com.chbachman.cminus.representation.Parser
 import com.chbachman.cminus.representation.Type
-import com.chbachman.cminus.representation.function.ContextFuncHeader
+import com.chbachman.cminus.representation.function.DeclaredFunctionHeader
 import com.chbachman.cminus.representation.struct.ClassHeader
 import com.chbachman.cminus.util.Run
 import org.antlr.v4.runtime.CharStream
@@ -20,6 +20,9 @@ class Start constructor(inputPath: String, outputPath: String, run: Boolean = tr
     // Main Method, all it does is init Type and create Start.
     companion object {
         @JvmStatic fun main(args: Array<String>) {
+
+            println(4444.4)
+
             var run = false
             if (args.size < 2) {
                 throw RuntimeException("Need input and output files.")
@@ -84,7 +87,7 @@ class Start constructor(inputPath: String, outputPath: String, run: Boolean = tr
         ctx.topLevelObject()
             .mapNotNull { it.functionDeclaration() }
             .forEach {
-                SymbolTable += ContextFuncHeader(it)
+                SymbolTable += DeclaredFunctionHeader(it)
             }
 
         // Handle Main Function

@@ -6,75 +6,96 @@ import org.antlr.v4.runtime.tree.TerminalNode
 
 class BooleanLiteral(ctx: TerminalNode): Expression {
     override val type = Type.Native.Boolean
-    val value = ctx.text == "true"
+    private val value = ctx.text == "true"
 
     override fun toString(): String {
         return if (value) "1" else "0"
     }
 }
 
-class IntegerLiteral(ctx: TerminalNode): Expression {
-    override val type = Type.Native.Int
-    val value = ctx.text.toInt()
-
-    override fun toString(): String {
-        return value.toString()
-    }
-}
-
-class HexLiteral(ctx: TerminalNode): Expression {
-    override val type = Type.Native.Int
-    val value = ctx.text
-        .removePrefix("0x")
-        .toInt(16)
-
-    override fun toString(): String {
-        return "0x" + value.toString(16)
-    }
-}
-
-class BinLiteral(ctx: TerminalNode): Expression {
-    override val type = Type.Native.Int
-    val value = ctx.text
-        .removePrefix("0b")
-        .toInt(2)
-
-    override fun toString(): String {
-        return "0b" + value.toString(2)
-    }
-}
-
 class CharLiteral(ctx: TerminalNode): Expression {
     override val type = Type.Native.Char
-    val value = ctx.text[1]
+    private val value = ctx.text[1]
 
     override fun toString(): String {
         return "'$value'"
     }
 }
 
-object RealLiteral {
-    fun parse(ctx: TerminalNode): Expression {
-        TODO("The value type: " + ctx.text + " is not implemented yet.")
+class DoubleLiteral(ctx: TerminalNode): Expression {
+    override val type: Type
+    private val value: Double
+
+    private val forced = ctx.text.last().equals('f', true)
+    private val suffix  = if (forced) "F" else ""
+
+    init {
+        val text = ctx.text
+            .replace("_", "")
+            .toLowerCase()
+            .removeSuffix("f")
+
+        value = text.toDouble()
+
+        type = if (forced) {
+            Type.Native.Float
+        } else {
+            Type.Native.Double
+        }
+    }
+
+    override fun toString(): String {
+        return value.toString() + suffix
     }
 }
 
-class DoubleLiteral(ctx: TerminalNode): Expression {
-    override val type = Type.Native.Double
-}
-
-class FloatLiteral(ctx: TerminalNode): Expression {
-    override val type = Type.Native.Float
-}
-
 class NullLiteral(ctx: TerminalNode): Expression {
-    override val type = Type.Native.Unit
+    override val type = Type.Native.Nothing
 
     override fun toString(): String {
         return "NULL"
     }
 }
 
-class LongLiteral(ctx: TerminalNode): Expression {
-    override val type = Type.Native.Long
+class IntegerLiteral(ctx: TerminalNode): Expression {
+    override val type: Type
+    private val base: Int
+    private val prefix: String
+    private val value: Long
+
+    private val forced = ctx.text.last().equals('l', true)
+    private val suffix  = if (forced) "L" else ""
+
+    init {
+        val text = ctx.text
+            .replace("_", "")
+            .toLowerCase()
+            .removeSuffix("l")
+
+        val pair = when {
+            text.startsWith("0x") -> Pair(16, "0x")
+            text.startsWith("0b") -> Pair(2, "0b")
+            else -> Pair(10, "")
+        }
+
+        base = pair.first
+        prefix = pair.second
+
+        value = text.removePrefix(prefix).toLong(base)
+
+
+        type = if (value > Integer.MAX_VALUE || value < Integer.MIN_VALUE) {
+            Type.Native.Long
+        } else {
+            if (forced) {
+                Type.Native.Long
+            } else {
+                Type.Native.Int
+            }
+        }
+    }
+
+    override fun toString(): String {
+        return prefix + value.toString(base) + suffix
+    }
 }

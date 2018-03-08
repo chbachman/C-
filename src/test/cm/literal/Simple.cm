@@ -1,6 +1,7 @@
 fun main() {
-    print(0b1111)
-    print(0x1123)
-    print('c')
-    print(null)
+    println(0b1111)
+    println(0x1123)
+    println('c')
+    println(null)
+    println(123)
 }

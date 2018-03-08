@@ -1,7 +1,6 @@
-/*
 fun main(): Int {
-	val temp = CArray<Int>()
-	temp[0] = 1;
-	print(temp[0])
+	val temp = 1_234_567_890_123
+	val temp2 = 134552
+	val temp3 = 13432L
+	return 0
 }
-*/

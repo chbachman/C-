@@ -5,8 +5,8 @@ import com.chbachman.cminus.SymbolTable
 import com.chbachman.cminus.Variable
 import com.chbachman.cminus.gen.Kotlin
 import com.chbachman.cminus.representation.*
-import com.chbachman.cminus.representation.function.CustomFuncHeader
-import com.chbachman.cminus.representation.function.Func
+import com.chbachman.cminus.representation.function.CustomFunctionHeader
+import com.chbachman.cminus.representation.function.Function
 import com.chbachman.cminus.static.Constants
 import com.chbachman.cminus.util.toPlainString
 
@@ -59,15 +59,15 @@ class ClassDeclaration(ctx: Kotlin.ClassDeclarationContext) : CustomType, TopLev
             "$constructor\n\n"
     }
 
-    inner class ClassConstructor(ctx: Kotlin.ClassDeclarationContext) : Func() {
-        override val header = CustomFuncHeader(
+    inner class ClassConstructor(ctx: Kotlin.ClassDeclarationContext) : Function() {
+        override val header = CustomFunctionHeader(
             "$type${Constants.NAMESPACE_REPRESENTATION}init",
-            emptyList(),
-            type
+            "",
+            returnType = type
         )
 
         val classVar = "this"
-        val code: CodeBlock
+        override val block: CodeBlock
 
         init {
             val code = mutableListOf<Statement>()
@@ -101,11 +101,11 @@ class ClassDeclaration(ctx: Kotlin.ClassDeclarationContext) : CustomType, TopLev
                 throw RuntimeException("Not all class variables created.")
             }
 
-            this.code = CodeBlock(code)
+            this.block = CodeBlock(code)
         }
 
         override fun toString(): String {
-            return "$header {$code}"
+            return "$header {$block}"
         }
 
         // MARK: Classes for creating code with correct typing.

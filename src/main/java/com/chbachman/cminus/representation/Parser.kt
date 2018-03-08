@@ -4,9 +4,9 @@ import com.chbachman.cminus.SymbolTable
 import com.chbachman.cminus.gen.Kotlin
 import com.chbachman.cminus.representation.control.IfExpression
 import com.chbachman.cminus.representation.control.Return
-import com.chbachman.cminus.representation.function.DeclaredFunc
+import com.chbachman.cminus.representation.function.DeclaredFunction
 import com.chbachman.cminus.representation.function.FunctionCall
-import com.chbachman.cminus.representation.function.NativeFunc
+import com.chbachman.cminus.representation.function.NativeFunction
 import com.chbachman.cminus.representation.literal.*
 import com.chbachman.cminus.representation.struct.ClassDeclaration
 import com.chbachman.cminus.representation.struct.ThisStatement
@@ -26,11 +26,11 @@ object Parser {
                     if (func.modifierList().modifier().any {
                         it.functionModifier()?.EXTERNAL() != null
                     }) {
-                        return NativeFunc(ctx.functionDeclaration())
+                        return NativeFunction(ctx.functionDeclaration())
                     }
                 }
 
-                DeclaredFunc(ctx.functionDeclaration())
+                DeclaredFunction(ctx.functionDeclaration())
             }
 
             ctx.classDeclaration() != null -> {
@@ -224,14 +224,14 @@ object Parser {
 
     fun parse(ctx: Kotlin.LiteralConstantContext, exp: Boolean = true): Expression {
         return when {
-            ctx.BinLiteral() != null -> BinLiteral(ctx.BinLiteral())
+            ctx.BinLiteral() != null -> IntegerLiteral(ctx.BinLiteral())
             ctx.IntegerLiteral() != null -> IntegerLiteral(ctx.IntegerLiteral())
-            ctx.HexLiteral() != null -> HexLiteral(ctx.HexLiteral())
+            ctx.HexLiteral() != null -> IntegerLiteral(ctx.HexLiteral())
             ctx.BooleanLiteral() != null -> BooleanLiteral(ctx.BooleanLiteral())
             ctx.CharacterLiteral() != null -> CharLiteral(ctx.CharacterLiteral())
-            ctx.RealLiteral() != null -> RealLiteral.parse(ctx.RealLiteral())
+            ctx.RealLiteral() != null -> DoubleLiteral(ctx.RealLiteral())
             ctx.NullLiteral() != null -> NullLiteral(ctx.NullLiteral())
-            ctx.LongLiteral() != null -> LongLiteral(ctx.LongLiteral())
+            ctx.LongLiteral() != null -> IntegerLiteral(ctx.LongLiteral())
             else -> TODO("The value type: ${ctx.text} is not implemented yet.")
         }
     }

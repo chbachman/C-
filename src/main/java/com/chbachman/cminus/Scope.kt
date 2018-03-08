@@ -1,7 +1,7 @@
 package com.chbachman.cminus
 
 import com.chbachman.cminus.representation.Type
-import com.chbachman.cminus.representation.function.FuncHeader
+import com.chbachman.cminus.representation.function.FunctionHeader
 import com.chbachman.cminus.util.peek
 import com.chbachman.cminus.util.pop
 import com.chbachman.cminus.util.push
@@ -60,25 +60,25 @@ object SymbolTable: Namespace() {
 }
 
 open class Namespace {
-    private val functions = mutableMapOf<FunctionKey, FuncHeader>()
+    private val functions = mutableMapOf<FunctionKey, FunctionHeader>()
     protected open val variables = Scope()
 
     open val list: Collection<Variable>
         get() = variables.variables.values
 
     // Function Handling
-    operator fun plusAssign(func: FuncHeader) {
+    operator fun plusAssign(func: FunctionHeader) {
         val types = func.parameters.map { it.type }
         val key = FunctionKey(func.name, types)
 
         functions[key] = func
     }
 
-    operator fun plusAssign(functions: List<FuncHeader>) {
+    operator fun plusAssign(functions: List<FunctionHeader>) {
         functions.forEach { plusAssign(it) }
     }
 
-    operator fun get(name: String, args: List<Type>): List<FuncHeader> {
+    operator fun get(name: String, args: List<Type>): List<FunctionHeader> {
         return functions.filter { (key, _) ->
             if (key.name != name) {
                 false

@@ -61,7 +61,7 @@ data class Type constructor(
             Type("Double", "double").pair(),
             Type("Unit", "void").pair(),
             Type("Boolean", "int").pair(),
-            Type("null", "NULL").pair(),
+            Type("Nothing", "void").pair(),
             Type("CArray", "int*").pair()
         )
 
@@ -113,6 +113,6 @@ data class Type constructor(
         val Double = baseTypes["Double"]!!
         val Unit = baseTypes["Unit"]!!
         val Boolean = baseTypes["Boolean"]!!
-        val Null = baseTypes["null"]!!
+        val Nothing = baseTypes["Nothing"]!!
     }
 }

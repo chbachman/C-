@@ -1,0 +1,5 @@
+fun main() {
+    println(13133131311331)
+    println(122_341_456)
+    println(13133131311331L)
+}
